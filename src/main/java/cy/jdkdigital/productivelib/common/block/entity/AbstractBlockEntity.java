@@ -2,13 +2,13 @@ package cy.jdkdigital.productivelib.common.block.entity;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
 
 public class AbstractBlockEntity extends BlockEntity
 {
@@ -17,26 +17,26 @@ public class AbstractBlockEntity extends BlockEntity
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
-        this.loadPacketNBT(tag);
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadAdditional(tag, provider);
+        this.loadPacketNBT(tag, provider);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        this.savePacketNBT(tag);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
+        super.saveAdditional(tag, provider);
+        this.savePacketNBT(tag, provider);
     }
 
-    public void savePacketNBT(CompoundTag tag) {
+    public void savePacketNBT(CompoundTag tag, HolderLookup.Provider provider) {
     }
 
-    public void loadPacketNBT(CompoundTag tag) {
+    public void loadPacketNBT(CompoundTag tag, HolderLookup.Provider provider) {
     }
 
     @Override
-    public @NotNull CompoundTag getUpdateTag() {
-        return saveWithId();
+    public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+        return saveWithId(provider);
     }
 
     @Override
@@ -45,9 +45,9 @@ public class AbstractBlockEntity extends BlockEntity
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-        super.onDataPacket(net, pkt);
-        this.loadPacketNBT(pkt.getTag());
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider provider) {
+        super.onDataPacket(net, pkt, provider);
+        this.loadPacketNBT(pkt.getTag(), provider);
         if (level instanceof ClientLevel) {
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 0);
         }

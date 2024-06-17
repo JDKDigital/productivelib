@@ -5,9 +5,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.ICancellableEvent;
 
-public class BeeReleaseEvent extends Event
+public class BeeReleaseEvent extends Event implements ICancellableEvent
 {
     private final Level level;
     private final Bee beeEntity;

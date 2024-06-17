@@ -1,15 +1,16 @@
 package cy.jdkdigital.productivelib.common.block.entity;
 
 import cy.jdkdigital.productivelib.common.item.AbstractUpgradeItem;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -60,18 +61,9 @@ public class InventoryHandlerHelper
                 );
     }
 
+    @Deprecated
     public static boolean areItemStackTagsEqual(ItemStack stackA, ItemStack stackB) {
-        if (!stackA.isEmpty() && !stackB.isEmpty()) {
-            CompoundTag tagA = stackA.getTag();
-            CompoundTag tagB = stackB.getTag();
-            if ((tagA == null || tagA.isEmpty()) && tagB != null && !tagB.isEmpty()) {
-                return false;
-            } else {
-                return (tagA == null || tagA.isEmpty() || tagA.equals(stackB.getTag())) && stackA.areCapsCompatible(stackB);
-            }
-        } else {
-            return false;
-        }
+        return ItemStack.isSameItemSameComponents(stackA, stackB);
     }
 
     public static class BlockEntityItemStackHandler extends ItemStackHandler
@@ -199,12 +191,12 @@ public class InventoryHandlerHelper
         }
 
         @Override
-        public void deserializeNBT(CompoundTag nbt) {
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
             int size = nbt.contains("Size", 3) ? nbt.getInt("Size") : stacks.size();
             if (size < stacks.size()) {
                 nbt.putInt("Size", stacks.size());
             }
-            super.deserializeNBT(nbt);
+            super.deserializeNBT(provider, nbt);
         }
     }
 
@@ -236,15 +228,15 @@ public class InventoryHandlerHelper
         }
 
         @Override
-        public CompoundTag serializeNBT() {
+        public CompoundTag serializeNBT(HolderLookup.Provider provider) {
             CompoundTag nbt = new CompoundTag();
-            this.fluid.writeToNBT(nbt);
+            this.fluid.save(provider, nbt);
             return nbt;
         }
 
         @Override
-        public void deserializeNBT(CompoundTag nbt) {
-            fluid = FluidStack.loadFluidStackFromNBT(nbt);
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+            fluid = FluidStack.parse(provider, nbt).orElse(FluidStack.EMPTY);
         }
     }
 }

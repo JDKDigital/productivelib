@@ -1,14 +1,17 @@
 package cy.jdkdigital.productivelib.common.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.INBTSerializable;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 public abstract class CapabilityBlockEntity extends AbstractBlockEntity implements Nameable
 {
@@ -27,50 +30,61 @@ public abstract class CapabilityBlockEntity extends AbstractBlockEntity implemen
     }
 
     @Override
-    public void savePacketNBT(CompoundTag tag) {
-        super.savePacketNBT(tag);
-        getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(inv -> {
-            CompoundTag compound = ((INBTSerializable<CompoundTag>) inv).serializeNBT();
-            tag.put("inv", compound);
-        });
+    public void savePacketNBT(CompoundTag tag, HolderLookup.Provider provider) {
+        super.savePacketNBT(tag, provider);
+        IItemHandler invHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, getBlockPos(), null);
+        if (invHandler instanceof ItemStackHandler serializable) {
+            tag.put("inv", serializable.serializeNBT(provider));
+        }
 
-        getCapability(ForgeCapabilities.ENERGY).ifPresent(handler -> {
-            tag.putInt("energy", handler.getEnergyStored());
-        });
+        IEnergyStorage energyHandler = level.getCapability(Capabilities.EnergyStorage.BLOCK, getBlockPos(), null);
+        if (energyHandler != null) {
+            tag.putInt("energy", energyHandler.getEnergyStored());
+        }
 
-        getCapability(ForgeCapabilities.FLUID_HANDLER).ifPresent(fluid -> {
-            CompoundTag compound = ((INBTSerializable<CompoundTag>) fluid).serializeNBT();
-            tag.put("fluid", compound);
-        });
+        IFluidHandler fluidHandler = level.getCapability(Capabilities.FluidHandler.BLOCK, getBlockPos(), null);
+        if (fluidHandler instanceof InventoryHandlerHelper.FluidHandler serializable) {
+            tag.put("fluid", serializable.serializeNBT(provider));
+        }
 
         if (this instanceof UpgradeableBlockEntity) {
-            ((UpgradeableBlockEntity) this).getUpgradeHandler().ifPresent(inv -> {
-                CompoundTag compound = ((INBTSerializable<CompoundTag>) inv).serializeNBT();
-                tag.put("upgrades", compound);
-            });
+            IItemHandler upgradeHandler = ((UpgradeableBlockEntity) this).getUpgradeHandler();
+            if (upgradeHandler instanceof ItemStackHandler serializable) {
+                tag.put("upgrades", serializable.serializeNBT(provider));
+            }
         }
     }
 
     @Override
-    public void loadPacketNBT(CompoundTag tag) {
-        super.loadPacketNBT(tag);
+    public void loadPacketNBT(CompoundTag tag, HolderLookup.Provider provider) {
+        super.loadPacketNBT(tag, provider);
         if (tag.contains("inv")) {
-            getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(inv -> ((INBTSerializable<CompoundTag>) inv).deserializeNBT(tag.getCompound("inv")));
+            IItemHandler invHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, getBlockPos(), null);
+            if (invHandler instanceof ItemStackHandler serializable) {
+                serializable.deserializeNBT(provider, tag.getCompound("inv"));
+            }
         }
 
         if (tag.contains("energy")) {
-            getCapability(ForgeCapabilities.ENERGY).ifPresent(handler -> {
-                handler.extractEnergy(handler.getEnergyStored(), false);
-                handler.receiveEnergy(tag.getInt("energy"), false);
-            });
+            IEnergyStorage energyHandler = level.getCapability(Capabilities.EnergyStorage.BLOCK, getBlockPos(), null);
+            if (energyHandler != null) {
+                energyHandler.extractEnergy(energyHandler.getEnergyStored(), false);
+                energyHandler.receiveEnergy(tag.getInt("energy"), false);
+            }
         }
 
         if (tag.contains("fluid")) {
-            getCapability(ForgeCapabilities.FLUID_HANDLER).ifPresent(fluid -> ((INBTSerializable<CompoundTag>) fluid).deserializeNBT(tag.getCompound("fluid")));
+            IFluidHandler fluidHandler = level.getCapability(Capabilities.FluidHandler.BLOCK, getBlockPos(), null);
+            if (fluidHandler instanceof InventoryHandlerHelper.FluidHandler serializable) {
+                serializable.deserializeNBT(provider, tag.getCompound("fluid"));
+            }
         }
 
         if (tag.contains("upgrades") && this instanceof UpgradeableBlockEntity) {
-            ((UpgradeableBlockEntity) this).getUpgradeHandler().ifPresent(inv -> ((INBTSerializable<CompoundTag>) inv).deserializeNBT(tag.getCompound("upgrades")));
+            IItemHandler upgradeHandler = ((UpgradeableBlockEntity) this).getUpgradeHandler();
+            if (upgradeHandler instanceof ItemStackHandler serializable) {
+                serializable.deserializeNBT(provider, tag.getCompound("upgrades"));
+            }
         }
     }
 }

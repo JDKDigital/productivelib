@@ -20,5 +20,5 @@ public abstract class FluidTankBlockEntity extends CapabilityBlockEntity
         }
     }
 
-    abstract void tickFluidTank(Level level, BlockPos pos, BlockState state, FluidTankBlockEntity blockEntity);
+    public abstract void tickFluidTank(Level level, BlockPos pos, BlockState state, FluidTankBlockEntity blockEntity);
 }

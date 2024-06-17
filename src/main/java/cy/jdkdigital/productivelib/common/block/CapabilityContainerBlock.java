@@ -7,7 +7,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 
 public abstract class CapabilityContainerBlock extends BaseEntityBlock
 {
@@ -17,25 +18,28 @@ public abstract class CapabilityContainerBlock extends BaseEntityBlock
 
     @SuppressWarnings("deprecation")
     @Override
-    public void onRemove(BlockState oldState, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
+    public void onRemove(BlockState oldState, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
         if (oldState.getBlock() != newState.getBlock()) {
-            BlockEntity blockEntity = worldIn.getBlockEntity(pos);
+            BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity != null) {
                 // Drop inventory
-                blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
+                IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, null);
+                if (handler != null) {
                     for (int slot = 0; slot < handler.getSlots(); ++slot) {
-                        Containers.dropItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), handler.getStackInSlot(slot));
+                        Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), handler.getStackInSlot(slot));
                     }
-                });
+                }
+
                 if (blockEntity instanceof UpgradeableBlockEntity) {
-                    ((UpgradeableBlockEntity) blockEntity).getUpgradeHandler().ifPresent(handler -> {
-                        for (int slot = 0; slot < handler.getSlots(); ++slot) {
-                            Containers.dropItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), handler.getStackInSlot(slot));
+                    IItemHandler upgradeHandler = ((UpgradeableBlockEntity) blockEntity).getUpgradeHandler();
+                    if (upgradeHandler != null) {
+                        for (int slot = 0; slot < upgradeHandler.getSlots(); ++slot) {
+                            Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), upgradeHandler.getStackInSlot(slot));
                         }
-                    });
+                    }
                 }
             }
         }
-        super.onRemove(oldState, worldIn, pos, newState, isMoving);
+        super.onRemove(oldState, level, pos, newState, isMoving);
     }
 }

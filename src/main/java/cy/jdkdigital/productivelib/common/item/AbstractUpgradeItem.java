@@ -1,19 +1,14 @@
 package cy.jdkdigital.productivelib.common.item;
 
 import cy.jdkdigital.productivelib.common.block.entity.UpgradeableBlockEntity;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.items.IItemHandler;
 
-import javax.annotation.Nullable;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractUpgradeItem extends Item
@@ -30,7 +25,8 @@ public abstract class AbstractUpgradeItem extends Item
                 BlockEntity tileEntity = world.getBlockEntity(context.getClickedPos());
                 if (tileEntity instanceof UpgradeableBlockEntity && ((UpgradeableBlockEntity) tileEntity).acceptsUpgrades()) {
                     AtomicBoolean hasInsertedUpgrade = new AtomicBoolean(false);
-                    ((UpgradeableBlockEntity) tileEntity).getUpgradeHandler().ifPresent(handler -> {
+                    IItemHandler handler = ((UpgradeableBlockEntity) tileEntity).getUpgradeHandler();
+                    if (handler != null) {
                         for (int slot = 0; slot < handler.getSlots(); ++slot) {
                             if (handler.getStackInSlot(slot).equals(ItemStack.EMPTY)) {
                                 handler.insertItem(slot, new ItemStack(context.getItemInHand().getItem()), false);
@@ -38,7 +34,7 @@ public abstract class AbstractUpgradeItem extends Item
                                 break;
                             }
                         }
-                    });
+                    }
                     if (hasInsertedUpgrade.get()) {
                         context.getPlayer().swing(context.getHand());
                         if (!context.getPlayer().isCreative()) {

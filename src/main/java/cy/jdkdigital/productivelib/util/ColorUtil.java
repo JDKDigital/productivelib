@@ -1,10 +1,7 @@
 package cy.jdkdigital.productivelib.util;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.TextColor;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.block.Block;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +14,7 @@ public class ColorUtil
 
     public static Integer getCacheColor(String color) {
         if (!stringColorCache.containsKey(color)) {
-            stringColorCache.put(color, TextColor.parseColor(color).getValue());
+            stringColorCache.put(color, TextColor.parseColor(color).getOrThrow().getValue());
         }
         return stringColorCache.get(color);
     }

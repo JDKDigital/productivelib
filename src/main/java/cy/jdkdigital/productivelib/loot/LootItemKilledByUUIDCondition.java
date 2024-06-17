@@ -4,23 +4,30 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import cy.jdkdigital.productivelib.ProductiveLib;
+import net.minecraft.advancements.critereon.LocationPredicate;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.level.storage.loot.predicates.LocationCheck;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
+import net.neoforged.neoforge.common.ToolAction;
+import net.neoforged.neoforge.common.loot.CanToolPerformAction;
 
 import java.util.Set;
 import java.util.UUID;
 
-public class LootItemKilledByUUIDCondition implements LootItemCondition
+public record LootItemKilledByUUIDCondition(UUID uuid) implements LootItemCondition
 {
-   private final UUID uuid;
-
-   private LootItemKilledByUUIDCondition(UUID uuid) {
-      this.uuid = uuid;
-   }
+   public static MapCodec<LootItemKilledByUUIDCondition> CODEC = RecordCodecBuilder.mapCodec(
+           builder -> builder
+                   .group(UUIDUtil.CODEC.fieldOf("uuid").forGetter(LootItemKilledByUUIDCondition::uuid))
+                   .apply(builder, LootItemKilledByUUIDCondition::new));
 
    @Override
    public LootItemConditionType getType() {
@@ -38,18 +45,5 @@ public class LootItemKilledByUUIDCondition implements LootItemCondition
          return context.hasParam(LootContextParams.LAST_DAMAGE_PLAYER) && context.getParam(LootContextParams.LAST_DAMAGE_PLAYER).getUUID().equals(uuid);
       }
       return false;
-   }
-
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<LootItemKilledByUUIDCondition>
-   {
-      @Override
-      public void serialize(JsonObject json, LootItemKilledByUUIDCondition condition, JsonSerializationContext context) {
-         json.addProperty("uuid", condition.uuid.toString());
-      }
-
-      @Override
-      public LootItemKilledByUUIDCondition deserialize(JsonObject json, JsonDeserializationContext context) {
-         return new LootItemKilledByUUIDCondition(UUID.fromString(json.get("uuid").getAsString()));
-      }
    }
 }

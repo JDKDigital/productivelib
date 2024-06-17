@@ -1,10 +1,15 @@
 package cy.jdkdigital.productivelib.common.recipe;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import cy.jdkdigital.productivelib.Config;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.IntArrayTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
@@ -13,32 +18,31 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.fml.ModList;
 
 import java.util.*;
 
 public abstract class TagOutputRecipe
 {
-    public final Map<Ingredient, IntArrayTag> itemOutput;
-    public final Map<ItemStack, IntArrayTag> calculatedItemOutput = new LinkedHashMap<>();
+    public final List<ChancedOutput> itemOutput;
+    public final Map<ItemStack, ChancedOutput> calculatedItemOutput = new LinkedHashMap<>();
     public static Map<String, Integer> modPreference = new HashMap<>();
 
     public TagOutputRecipe(Ingredient itemOutput) {
-        this.itemOutput = new LinkedHashMap<>();
-        this.itemOutput.put(itemOutput, new IntArrayTag(new int[]{1, 1, 100}));
+        this.itemOutput = new ArrayList<>();
+        this.itemOutput.add(new ChancedOutput(itemOutput, 1, 1, 1f));
     }
 
-    public TagOutputRecipe(Map<Ingredient, IntArrayTag> itemOutput) {
+    public TagOutputRecipe(List<ChancedOutput> itemOutput) {
         this.itemOutput = itemOutput;
     }
 
-    public Map<ItemStack, IntArrayTag> getRecipeOutputs() {
+    public Map<ItemStack, ChancedOutput> getRecipeOutputs() {
         if (calculatedItemOutput.isEmpty() && !itemOutput.isEmpty()) {
-            itemOutput.forEach((ingredient, intNBT) -> {
-                ItemStack preferredItem = getPreferredItemByMod(ingredient);
+            itemOutput.forEach(chancedOutput -> {
+                ItemStack preferredItem = getPreferredItemByMod(chancedOutput.ingredient);
                 if (preferredItem != null && !preferredItem.getItem().equals(Items.BARRIER)) {
-                    calculatedItemOutput.put(preferredItem, intNBT);
+                    calculatedItemOutput.put(preferredItem, chancedOutput);
                 }
             });
         }
@@ -56,8 +60,8 @@ public abstract class TagOutputRecipe
         ItemStack preferredItem = null;
         int currBest = modPreference.size();
         for (ItemStack item : list) {
-            ResourceLocation rl = ForgeRegistries.ITEMS.getKey(item.getItem());
-            if (rl != null) {
+            ResourceLocation rl = BuiltInRegistries.ITEM.getKey(item.getItem());
+            if (!rl.equals(BuiltInRegistries.ITEM.getDefaultKey())) {
                 String modId = rl.getNamespace();
                 int priority = 100;
                 if (modPreference.containsKey(modId)) {
@@ -74,12 +78,12 @@ public abstract class TagOutputRecipe
 
     public static Fluid getPreferredFluidByMod(String fluidName) {
         // Try loading from fluid registry
-        Fluid preferredFluid = ForgeRegistries.FLUIDS.getValue(new ResourceLocation(fluidName));
+        Fluid preferredFluid = BuiltInRegistries.FLUID.get(ResourceLocation.parse(fluidName));
 
         // Try loading fluid from fluid tag
-        if (preferredFluid == null || preferredFluid.equals(Fluids.EMPTY)) {
+        if (preferredFluid.equals(Fluids.EMPTY)) {
             try {
-                HolderSet.Named<Fluid> fluidTag = BuiltInRegistries.FLUID.getOrCreateTag(TagKey.create(Registries.FLUID, new ResourceLocation(fluidName)));
+                HolderSet.Named<Fluid> fluidTag = BuiltInRegistries.FLUID.getOrCreateTag(TagKey.create(Registries.FLUID, ResourceLocation.parse(fluidName)));
                 if (fluidTag.size() > 0) {
                     int currBest = 100;
                     for (Holder<Fluid> fluidHolder: fluidTag.stream().toList()) {
@@ -92,8 +96,8 @@ public abstract class TagOutputRecipe
                             continue;
                         }
 
-                        ResourceLocation rl = ForgeRegistries.FLUIDS.getKey(fluid);
-                        if (rl != null) {
+                        ResourceLocation rl = BuiltInRegistries.FLUID.getKey(fluid);
+                        if (!rl.equals(BuiltInRegistries.FLUID.getDefaultKey())) {
                             String modId = rl.getNamespace();
                             int priority = currBest;
                             if (getModPreference().containsKey(modId)) {
@@ -117,12 +121,12 @@ public abstract class TagOutputRecipe
 
     public static List<Fluid> getAllFluidsFromName(String fluidName) {
         // Try loading from fluid registry
-        List<Fluid> fluids = Collections.singletonList(ForgeRegistries.FLUIDS.getValue(new ResourceLocation(fluidName)));
+        List<Fluid> fluids = Collections.singletonList(BuiltInRegistries.FLUID.get(ResourceLocation.parse(fluidName)));
 
         // Try loading fluid from fluid tag
         if (fluids.get(0).equals(Fluids.EMPTY)) {
             try {
-                HolderSet.Named<Fluid> fluidTag = BuiltInRegistries.FLUID.getOrCreateTag(TagKey.create(Registries.FLUID, new ResourceLocation(fluidName)));
+                HolderSet.Named<Fluid> fluidTag = BuiltInRegistries.FLUID.getOrCreateTag(TagKey.create(Registries.FLUID, ResourceLocation.parse(fluidName)));
                 if (fluidTag.size() > 0) {
                     return fluidTag.stream().map(Holder::value).toList();
                 }
@@ -139,8 +143,36 @@ public abstract class TagOutputRecipe
             return modPreference;
         }
 
-        // TODO add mod preference list here
+        int priority = 0;
+        for (String modId : Config.modPreference) {
+            if (ModList.get().isLoaded(modId)) {
+                modPreference.put(modId, ++priority);
+            }
+        }
 
         return modPreference;
+    }
+
+    public record ChancedOutput(Ingredient ingredient, int min, int max, float chance) {
+        public static final Codec<ChancedOutput> CODEC = RecordCodecBuilder.create(
+            builder -> builder.group(
+                    Ingredient.CODEC.fieldOf("item").forGetter(chancedOutput -> chancedOutput.ingredient),
+                    Codec.INT.fieldOf("min").orElse(1).forGetter(chancedOutput -> chancedOutput.min),
+                    Codec.INT.fieldOf("max").orElse(1).forGetter(chancedOutput -> chancedOutput.max),
+                    Codec.FLOAT.fieldOf("chance").orElse(1f).forGetter(chancedOutput -> chancedOutput.chance)
+            )
+            .apply(builder, ChancedOutput::new)
+        );
+
+        public static ChancedOutput read(RegistryFriendlyByteBuf buffer) {
+            return new ChancedOutput(Ingredient.CONTENTS_STREAM_CODEC.decode(buffer), buffer.readInt(), buffer.readInt(), buffer.readFloat());
+        }
+
+        public static void write(RegistryFriendlyByteBuf buffer, ChancedOutput chancedOutput) {
+            Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, chancedOutput.ingredient);
+            buffer.writeInt(chancedOutput.min);
+            buffer.writeInt(chancedOutput.max);
+            buffer.writeFloat(chancedOutput.chance);
+        }
     }
 }

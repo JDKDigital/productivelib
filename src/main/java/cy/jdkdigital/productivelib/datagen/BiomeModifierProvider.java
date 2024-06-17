@@ -3,12 +3,12 @@ package cy.jdkdigital.productivelib.datagen;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.JsonOps;
-import cpw.mods.modlauncher.api.LamdbaExceptionUtils;
+import cpw.mods.util.LambdaExceptionUtils;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.world.BiomeModifier;
+import net.neoforged.neoforge.common.world.BiomeModifier;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -45,9 +45,9 @@ public abstract class BiomeModifierProvider implements DataProvider
 
         ImmutableList.Builder<CompletableFuture<?>> futuresBuilder = new ImmutableList.Builder<>();
 
-        toSerialize.forEach(LamdbaExceptionUtils.rethrowBiConsumer((name, json) ->
+        toSerialize.forEach(LambdaExceptionUtils.rethrowBiConsumer((name, json) ->
         {
-            entries.add(new ResourceLocation(modid, name));
+            entries.add(ResourceLocation.fromNamespaceAndPath(modid, name));
             Path modifierPath = modifierFolderPath.resolve(name + ".json");
             futuresBuilder.add(DataProvider.saveStable(cache, json, modifierPath));
         }));
@@ -57,7 +57,7 @@ public abstract class BiomeModifierProvider implements DataProvider
 
     public <T extends BiomeModifier> void add(String modifier, T instance)
     {
-        JsonElement json = BiomeModifier.DIRECT_CODEC.encodeStart(JsonOps.INSTANCE, instance).getOrThrow(false, s -> {});
+        JsonElement json = BiomeModifier.DIRECT_CODEC.encodeStart(JsonOps.INSTANCE, instance).getOrThrow();
         this.toSerialize.put(modifier, json);
     }
 

@@ -1,18 +1,17 @@
 package cy.jdkdigital.productivelib.common.recipe;
 
-import com.google.gson.JsonObject;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
+import com.mojang.datafixers.Products;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 
-import javax.annotation.Nonnull;
-
-public abstract class TripleOutputRecipe implements Recipe<Container>
+public abstract class TripleOutputRecipe implements Recipe<CraftingInput>
 {
     public final ResourceLocation id;
     public final Ingredient input;
@@ -28,13 +27,25 @@ public abstract class TripleOutputRecipe implements Recipe<Container>
         this.tertiary = tertiary;
     }
 
+    protected static <T extends TripleOutputRecipe> Products.P5<RecordCodecBuilder.Mu<T>, ResourceLocation, Ingredient, ItemStack, ItemStack, ItemStack> codecStart(RecordCodecBuilder.Instance<T> instance) {
+        return instance.group(
+                ResourceLocation.CODEC.fieldOf("id").forGetter(m -> m.id),
+                Ingredient.CODEC.fieldOf("input").forGetter(m -> m.input),
+                ItemStack.CODEC.fieldOf("output").forGetter(m -> m.output),
+                ItemStack.CODEC.fieldOf("secondary").forGetter(m -> m.secondary),
+                ItemStack.CODEC.fieldOf("tertiary").forGetter(m -> m.tertiary)
+        );
+    }
+
+    abstract int getInputSlot();
+
     @Override
-    public boolean matches(Container container, Level level) {
-        return input.test(container.getItem(0)); // TODO change slot number to var
+    public boolean matches(CraftingInput container, Level level) {
+        return input.test(container.getItem(getInputSlot()));
     }
 
     @Override
-    public ItemStack assemble(Container container, RegistryAccess level) {
+    public ItemStack assemble(CraftingInput container, HolderLookup.Provider provider) {
         return ItemStack.EMPTY;
     }
 
@@ -44,67 +55,7 @@ public abstract class TripleOutputRecipe implements Recipe<Container>
     }
 
     @Override
-    public ItemStack getResultItem(RegistryAccess level) {
+    public ItemStack getResultItem(HolderLookup.Provider provider) {
         return this.output.copy();
-    }
-
-    @Override
-    public ResourceLocation getId() {
-        return id;
-    }
-
-    public static class Serializer<T extends TripleOutputRecipe> implements RecipeSerializer<T>
-    {
-        final IRecipeFactory<T> factory;
-
-        public Serializer(IRecipeFactory<T> factory) {
-            this.factory = factory;
-        }
-
-        @Nonnull
-        @Override
-        public T fromJson(ResourceLocation id, JsonObject json) {
-            Ingredient input;
-            if (GsonHelper.isArrayNode(json, "input")) {
-                input = Ingredient.fromJson(GsonHelper.getAsJsonArray(json, "input"));
-            } else {
-                input = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "input"));
-            }
-            ItemStack output = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "output"));
-            ItemStack secondary = ItemStack.EMPTY;
-            if (json.has("secondary")) {
-                secondary = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "secondary"));
-            }
-            ItemStack tertiary = ItemStack.EMPTY;
-            if (json.has("tertiary")) {
-                tertiary = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "tertiary"));
-            }
-
-            return this.factory.create(id, input, output, secondary, tertiary);
-        }
-
-        public T fromNetwork(@Nonnull ResourceLocation id, @Nonnull FriendlyByteBuf buffer) {
-            try {
-                return this.factory.create(id, Ingredient.fromNetwork(buffer), buffer.readItem(), buffer.readItem(), buffer.readItem());
-            } catch (Exception e) {
-                throw e;
-            }
-        }
-
-        public void toNetwork(@Nonnull FriendlyByteBuf buffer, T recipe) {
-            try {
-                recipe.input.toNetwork(buffer);
-                buffer.writeItem(recipe.output);
-                buffer.writeItem(recipe.secondary);
-                buffer.writeItem(recipe.tertiary);
-            } catch (Exception e) {
-                throw e;
-            }
-        }
-
-        public interface IRecipeFactory<T extends TripleOutputRecipe>
-        {
-            T create(ResourceLocation id, Ingredient in, ItemStack out, ItemStack out2, ItemStack out3);
-        }
     }
 }

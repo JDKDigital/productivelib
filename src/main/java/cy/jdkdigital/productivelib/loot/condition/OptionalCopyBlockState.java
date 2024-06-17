@@ -1,21 +1,17 @@
 package cy.jdkdigital.productivelib.loot.condition;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import cy.jdkdigital.productivelib.ProductiveLib;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
@@ -25,17 +21,36 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class OptionalCopyBlockState extends LootItemConditionalFunction
 {
-    final Block block;
-    final Set<Property<?>> properties;
+    public static final MapCodec<OptionalCopyBlockState> CODEC = RecordCodecBuilder.mapCodec(
+            builder -> commonFields(builder)
+                    .and(
+                            builder.group(
+                                    BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter(optionalCopyBlockState -> optionalCopyBlockState.block),
+                                    Codec.STRING.listOf().fieldOf("properties").orElse(List.of()).forGetter(optionalCopyBlockState -> optionalCopyBlockState.properties.stream().map(Property::getName).toList())
+                            )
+                    )
+                    .apply(builder, OptionalCopyBlockState::new)
+    );
 
-    OptionalCopyBlockState(LootItemCondition[] lootItemConditions, Block pBlock, Set<Property<?>> pStatePredicate) {
+    private final Holder<Block> block;
+    private final Set<Property<?>> properties;
+
+    OptionalCopyBlockState(List<LootItemCondition> lootItemConditions, Holder<Block> pBlock, Set<Property<?>> pStatePredicate) {
         super(lootItemConditions);
         this.block = pBlock;
         this.properties = pStatePredicate;
+    }
+
+    private OptionalCopyBlockState(List<LootItemCondition> lootItemConditions, Holder<Block> pBlock, List<String> pStatePredicate) {
+        this(lootItemConditions, pBlock, pStatePredicate.stream().map(pBlock.value().getStateDefinition()::getProperty).filter(Objects::nonNull).collect(Collectors.toSet()));
     }
 
     @Override
@@ -43,93 +58,57 @@ public class OptionalCopyBlockState extends LootItemConditionalFunction
         return ProductiveLib.OPTIONAL_BLOCK_STATE_PROPERTY.get();
     }
 
+    @Override
     public Set<LootContextParam<?>> getReferencedContextParams() {
         return ImmutableSet.of(LootContextParams.BLOCK_STATE);
     }
 
-    protected ItemStack run(ItemStack p_80060_, LootContext p_80061_) {
+    @Override
+    protected ItemStack run(ItemStack itemStack, LootContext p_80061_) {
         BlockState blockstate = p_80061_.getParamOrNull(LootContextParams.BLOCK_STATE);
         if (blockstate != null) {
-            CompoundTag compoundtag = p_80060_.getOrCreateTag();
-            CompoundTag compoundtag1;
-            if (compoundtag.contains("BlockStateTag", 10)) {
-                compoundtag1 = compoundtag.getCompound("BlockStateTag");
-            } else {
-                compoundtag1 = new CompoundTag();
-                compoundtag.put("BlockStateTag", compoundtag1);
-            }
+            itemStack.update(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY, stateProperties -> {
+                for (Property<?> property : this.properties) {
+                    if (blockstate.hasProperty(property)) {
+                        stateProperties = stateProperties.with(property, blockstate);
+                    }
+                }
 
-            this.properties.stream().filter(blockstate::hasProperty).forEach((p_80072_) -> {
-                compoundtag1.putString(p_80072_.getName(), serialize(blockstate, p_80072_));
+                return stateProperties;
             });
         }
 
-        return p_80060_;
+        return itemStack;
     }
 
-    public static OptionalCopyBlockState.Builder copyState(Block p_80063_) {
-        return new OptionalCopyBlockState.Builder(p_80063_);
+    public static OptionalCopyBlockState.Builder copyState(Block block) {
+        return new OptionalCopyBlockState.Builder(block);
     }
 
-    private static <T extends Comparable<T>> String serialize(BlockState p_80065_, Property<T> p_80066_) {
-        T t = p_80065_.getValue(p_80066_);
-        return p_80066_.getName(t);
-    }
+    public static class Builder extends LootItemConditionalFunction.Builder<OptionalCopyBlockState.Builder> {
+        private final Holder<Block> block;
+        private final ImmutableSet.Builder<Property<?>> properties = ImmutableSet.builder();
 
-    public static class Builder extends LootItemConditionalFunction.Builder<OptionalCopyBlockState.Builder>
-    {
-        private final Block block;
-        private final Set<Property<?>> properties = Sets.newHashSet();
-
-        Builder(Block p_80079_) {
-            this.block = p_80079_;
+        Builder(Block block) {
+            this.block = block.builtInRegistryHolder();
         }
 
-        public OptionalCopyBlockState.Builder copy(Property<?> property) {
-            if (!this.block.getStateDefinition().getProperties().contains(property)) {
-                throw new IllegalStateException("Property " + property + " is not present on block " + this.block);
+        public Builder copy(Property<?> p_80085_) {
+            if (!this.block.value().getStateDefinition().getProperties().contains(p_80085_)) {
+                throw new IllegalStateException("Property " + p_80085_ + " is not present on block " + this.block);
             } else {
-                this.properties.add(property);
+                this.properties.add(p_80085_);
                 return this;
             }
         }
 
-        protected OptionalCopyBlockState.Builder getThis() {
+        protected Builder getThis() {
             return this;
         }
 
+        @Override
         public LootItemFunction build() {
-            return new OptionalCopyBlockState(this.getConditions(), this.block, this.properties);
-        }
-    }
-
-    public static class Serializer extends LootItemConditionalFunction.Serializer<OptionalCopyBlockState>
-    {
-        public void serialize(JsonObject json, OptionalCopyBlockState optionalCopyBlockState, JsonSerializationContext serializationContext) {
-            super.serialize(json, optionalCopyBlockState, serializationContext);
-            json.addProperty("block", BuiltInRegistries.BLOCK.getKey(optionalCopyBlockState.block).toString());
-            JsonArray jsonarray = new JsonArray();
-            optionalCopyBlockState.properties.forEach((property) -> {
-                if (property != null) {
-                    jsonarray.add(property.getName());
-                }
-            });
-            json.add("properties", jsonarray);
-        }
-
-        public OptionalCopyBlockState deserialize(JsonObject p_80093_, JsonDeserializationContext p_80094_, LootItemCondition[] p_80095_) {
-            ResourceLocation resourcelocation = new ResourceLocation(GsonHelper.getAsString(p_80093_, "block"));
-            Block block = BuiltInRegistries.BLOCK.getOptional(resourcelocation).orElse(Blocks.AIR);
-            StateDefinition<Block, BlockState> statedefinition = block.getStateDefinition();
-            Set<Property<?>> set = Sets.newHashSet();
-            JsonArray jsonarray = GsonHelper.getAsJsonArray(p_80093_, "properties", (JsonArray) null);
-            if (jsonarray != null) {
-                jsonarray.forEach((json) -> {
-                    set.add(statedefinition.getProperty(GsonHelper.convertToString(json, "property")));
-                });
-            }
-
-            return new OptionalCopyBlockState(p_80095_, block, set);
+            return new OptionalCopyBlockState(this.getConditions(), this.block, this.properties.build());
         }
     }
 }
