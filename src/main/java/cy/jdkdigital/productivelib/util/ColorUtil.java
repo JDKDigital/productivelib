@@ -1,7 +1,9 @@
 package cy.jdkdigital.productivelib.util;
 
+import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TextColor;
+import net.minecraft.util.FastColor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +16,7 @@ public class ColorUtil
 
     public static Integer getCacheColor(String color) {
         if (!stringColorCache.containsKey(color)) {
-            stringColorCache.put(color, TextColor.parseColor(color).getOrThrow().getValue());
+            stringColorCache.put(color, getColorFromHex(color));
         }
         return stringColorCache.get(color);
     }
@@ -34,6 +36,11 @@ public class ColorUtil
         f[3] = (float) ((color >> 24) & 0xff)/255f;
 
         return f;
+    }
+
+    public static Integer getColorFromHex(String hex) {
+        var c = hex.replace("#", "").split("(?<=\\G.{2})");
+        return FastColor.ARGB32.color(Integer.parseInt(c[0], 16), Integer.parseInt(c[1], 16), Integer.parseInt(c[2], 16));
     }
 
     public static float[] getCycleColor(int color, int color2, int tickCount, float partialTicks) {

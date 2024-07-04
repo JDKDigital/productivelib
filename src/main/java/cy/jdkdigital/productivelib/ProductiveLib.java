@@ -15,6 +15,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -42,11 +43,13 @@ public final class ProductiveLib
     public static final DeferredHolder<LootItemConditionType, LootItemConditionType> KILLED_BY_UUID = LOOT_POOL_CONDITIONS.register("killed_by_uuid", () -> new LootItemConditionType(LootItemKilledByUUIDCondition.CODEC));
     public static final DeferredHolder<MapCodec<? extends ICondition>, MapCodec<FluidTagEmptyCondition>> FLUID_TAG_EMPTY_CONDITION = CONDITION_CODECS.register("fluid_tag_empty", () -> FluidTagEmptyCondition.CODEC);
 
-    public ProductiveLib(IEventBus modEventBus, Dist dist, ModContainer container) {
+    public ProductiveLib(IEventBus modEventBus, ModContainer container) {
         LOOT_SERIALIZERS.register(modEventBus);
         LOOT_POOL_ENTRIES.register(modEventBus);
         LOOT_POOL_FUNCTIONS.register(modEventBus);
         LOOT_POOL_CONDITIONS.register(modEventBus);
         CONDITION_CODECS.register(modEventBus);
+
+        container.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
     }
 }

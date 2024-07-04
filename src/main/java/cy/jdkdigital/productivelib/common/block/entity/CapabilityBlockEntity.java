@@ -8,8 +8,10 @@ import net.minecraft.world.Nameable;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
@@ -29,22 +31,34 @@ public abstract class CapabilityBlockEntity extends AbstractBlockEntity implemen
         return getName();
     }
 
+    public IItemHandler getItemHandler() {
+        return null;
+    }
+    public EnergyStorage getEnergyHandler() {
+        return null;
+    }
+    public FluidTank getFluidHandler() {
+        return null;
+    }
+
     @Override
     public void savePacketNBT(CompoundTag tag, HolderLookup.Provider provider) {
         super.savePacketNBT(tag, provider);
-        IItemHandler invHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, getBlockPos(), null);
+        IItemHandler invHandler = getItemHandler();
         if (invHandler instanceof ItemStackHandler serializable) {
             tag.put("inv", serializable.serializeNBT(provider));
         }
 
-        IEnergyStorage energyHandler = level.getCapability(Capabilities.EnergyStorage.BLOCK, getBlockPos(), null);
+        EnergyStorage energyHandler = getEnergyHandler();
         if (energyHandler != null) {
-            tag.putInt("energy", energyHandler.getEnergyStored());
+            tag.put("energy", energyHandler.serializeNBT(provider));
         }
 
-        IFluidHandler fluidHandler = level.getCapability(Capabilities.FluidHandler.BLOCK, getBlockPos(), null);
-        if (fluidHandler instanceof InventoryHandlerHelper.FluidHandler serializable) {
-            tag.put("fluid", serializable.serializeNBT(provider));
+        FluidTank fluidHandler = getFluidHandler();
+        if (fluidHandler != null) {
+            CompoundTag nbt = new CompoundTag();
+            fluidHandler.writeToNBT(provider, nbt);
+            tag.put("fluid", nbt);
         }
 
         if (this instanceof UpgradeableBlockEntity) {
@@ -59,24 +73,23 @@ public abstract class CapabilityBlockEntity extends AbstractBlockEntity implemen
     public void loadPacketNBT(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadPacketNBT(tag, provider);
         if (tag.contains("inv")) {
-            IItemHandler invHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, getBlockPos(), null);
+            IItemHandler invHandler = getItemHandler();
             if (invHandler instanceof ItemStackHandler serializable) {
                 serializable.deserializeNBT(provider, tag.getCompound("inv"));
             }
         }
 
         if (tag.contains("energy")) {
-            IEnergyStorage energyHandler = level.getCapability(Capabilities.EnergyStorage.BLOCK, getBlockPos(), null);
+            EnergyStorage energyHandler = getEnergyHandler();
             if (energyHandler != null) {
-                energyHandler.extractEnergy(energyHandler.getEnergyStored(), false);
-                energyHandler.receiveEnergy(tag.getInt("energy"), false);
+                energyHandler.deserializeNBT(provider, tag.get("energy"));
             }
         }
 
         if (tag.contains("fluid")) {
-            IFluidHandler fluidHandler = level.getCapability(Capabilities.FluidHandler.BLOCK, getBlockPos(), null);
-            if (fluidHandler instanceof InventoryHandlerHelper.FluidHandler serializable) {
-                serializable.deserializeNBT(provider, tag.getCompound("fluid"));
+            FluidTank fluidHandler = getFluidHandler();
+            if (fluidHandler != null) {
+                fluidHandler.readFromNBT(provider, tag.getCompound("fluid"));
             }
         }
 

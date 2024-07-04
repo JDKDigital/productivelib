@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -66,7 +67,7 @@ public class InventoryHandlerHelper
         return ItemStack.isSameItemSameComponents(stackA, stackB);
     }
 
-    public static class BlockEntityItemStackHandler extends ItemStackHandler
+    public static class BlockEntityItemStackHandler extends ItemStackHandler implements RecipeInput
     {
         protected BlockEntity blockEntity;
 
@@ -198,6 +199,16 @@ public class InventoryHandlerHelper
             }
             super.deserializeNBT(provider, nbt);
         }
+
+        @Override
+        public ItemStack getItem(int slot) {
+            return getStackInSlot(slot);
+        }
+
+        @Override
+        public int size() {
+            return getSlots();
+        }
     }
 
     public static class UpgradeHandler extends BlockEntityItemStackHandler
@@ -214,29 +225,6 @@ public class InventoryHandlerHelper
         @Override
         public boolean isInputSlotItem(int slot, ItemStack item) {
             return item.getItem() instanceof AbstractUpgradeItem;
-        }
-    }
-
-    public static class FluidHandler extends FluidTank implements INBTSerializable<CompoundTag>
-    {
-        public FluidHandler(int capacity) {
-            super(capacity);
-        }
-
-        public FluidHandler(int capacity, Predicate<FluidStack> validator) {
-            super(capacity, validator);
-        }
-
-        @Override
-        public CompoundTag serializeNBT(HolderLookup.Provider provider) {
-            CompoundTag nbt = new CompoundTag();
-            this.fluid.save(provider, nbt);
-            return nbt;
-        }
-
-        @Override
-        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
-            fluid = FluidStack.parse(provider, nbt).orElse(FluidStack.EMPTY);
         }
     }
 }
