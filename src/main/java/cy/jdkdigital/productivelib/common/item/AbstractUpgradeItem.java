@@ -1,14 +1,19 @@
 package cy.jdkdigital.productivelib.common.item;
 
 import cy.jdkdigital.productivelib.common.block.entity.UpgradeableBlockEntity;
+import cy.jdkdigital.productivelib.event.CollectValidUpgradesEvent;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.IItemHandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractUpgradeItem extends Item

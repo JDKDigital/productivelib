@@ -3,7 +3,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.142'
+    id 'net.neoforged.gradle.userdev' version '7.0.145'
 }
 
 version = mod_version
@@ -58,6 +58,9 @@ repositories {
 
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
+
+    implementation "curse.maven:jei-238222:5567933"
+    implementation "curse.maven:jade-324717:5444008"
 }
 
 tasks.withType(ProcessResources).configureEach {

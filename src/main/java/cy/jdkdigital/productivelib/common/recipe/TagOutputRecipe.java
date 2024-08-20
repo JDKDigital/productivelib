@@ -1,14 +1,12 @@
 package cy.jdkdigital.productivelib.common.recipe;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import cy.jdkdigital.productivelib.Config;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -19,6 +17,9 @@ import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
+import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 
 import java.util.*;
 
@@ -74,6 +75,31 @@ public abstract class TagOutputRecipe
             }
         }
         return preferredItem;
+    }
+
+    public static FluidStack getPreferredFluidStackByMod(SizedFluidIngredient fluidIngredient) {
+        FluidStack bestFluid = FluidStack.EMPTY;
+        int currBest = 100;
+        for (FluidStack stack : fluidIngredient.getFluids()) {
+            if (bestFluid.isEmpty()) {
+                bestFluid = stack;
+            } else {
+                ResourceLocation rl = BuiltInRegistries.FLUID.getKey(stack.getFluid());
+                if (!rl.equals(BuiltInRegistries.FLUID.getDefaultKey())) {
+                    String modId = rl.getNamespace();
+                    int priority = currBest;
+                    if (getModPreference().containsKey(modId)) {
+                        priority = getModPreference().get(modId);
+                    }
+
+                    if (priority >= 0 && priority <= currBest) {
+                        bestFluid = stack;
+                        currBest = priority;
+                    }
+                }
+            }
+        }
+        return bestFluid;
     }
 
     public static Fluid getPreferredFluidByMod(String fluidName) {
@@ -144,7 +170,8 @@ public abstract class TagOutputRecipe
         }
 
         int priority = 0;
-        for (String modId : Config.modPreference) {
+        modPreference.put("minecraft", ++priority);
+        for (String modId : Config.MOD_PREFERENCE.get()) {
             if (ModList.get().isLoaded(modId)) {
                 modPreference.put(modId, ++priority);
             }

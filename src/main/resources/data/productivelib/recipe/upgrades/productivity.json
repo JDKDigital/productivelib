@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CHC",
+    "DBD",
+    "CHC"
+  ],
+  "key": {
+    "B": {
+      "item": "productivelib:upgrade_base"
+    },
+    "H": {
+      "item": "minecraft:honey_block"
+    },
+    "C": {
+      "tag": "c:storage_blocks/honeycombs"
+    },
+    "D": {
+      "tag": "c:fragments/draconic"
+    }
+  },
+  "result": {
+    "id": "productivelib:upgrade_productivity"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:fragments/draconic"
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "productivelib:upgrade_child"
+    }
+  ],
+  "result": {
+    "id": "productivelib:upgrade_adult"
+  }
+}

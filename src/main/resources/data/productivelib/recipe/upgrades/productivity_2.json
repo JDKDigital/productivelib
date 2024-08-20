@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "UHU",
+    "SBS",
+    "UHU"
+  ],
+  "key": {
+    "B": {
+      "item": "productivelib:upgrade_base"
+    },
+    "H": {
+      "item": "minecraft:honey_block"
+    },
+    "S": {
+      "tag": "c:nether_stars"
+    },
+    "U": {
+      "item": "productivelib:upgrade_productivity"
+    }
+  },
+  "result": {
+    "id": "productivelib:upgrade_productivity_2"
+  }
+}

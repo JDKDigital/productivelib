@@ -1,6 +1,8 @@
 package cy.jdkdigital.productivelib.common.block.entity;
 
 import cy.jdkdigital.productivelib.common.item.AbstractUpgradeItem;
+import cy.jdkdigital.productivelib.event.CollectValidUpgradesEvent;
+import cy.jdkdigital.productivelib.registry.LibItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
@@ -8,9 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.common.util.INBTSerializable;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Predicate;
 
 public class InventoryHandlerHelper
 {
@@ -213,8 +212,16 @@ public class InventoryHandlerHelper
 
     public static class UpgradeHandler extends BlockEntityItemStackHandler
     {
+        private final List<Item> validUpgrades;
+
+        @Deprecated
         public UpgradeHandler(int size, BlockEntity tileEntity) {
+            this(size, tileEntity, List.of());
+        }
+
+        public UpgradeHandler(int size, BlockEntity tileEntity, List<Item> validUpgrades) {
             super(size, tileEntity);
+            this.validUpgrades = new ArrayList<>(validUpgrades); // ensure mutable list
         }
 
         @Override
@@ -224,7 +231,16 @@ public class InventoryHandlerHelper
 
         @Override
         public boolean isInputSlotItem(int slot, ItemStack item) {
-            return item.getItem() instanceof AbstractUpgradeItem;
+            return item.getItem() instanceof AbstractUpgradeItem && isValidUpgrade(item);
+        }
+
+        public boolean isValidUpgrade(ItemStack item) {
+            return getValidUpgrades().contains(item.getItem());
+        }
+
+        public List<Item> getValidUpgrades() {
+            var event = NeoForge.EVENT_BUS.post(new CollectValidUpgradesEvent(this.blockEntity, this.validUpgrades));
+            return event.getValidUpgrades();
         }
     }
 }

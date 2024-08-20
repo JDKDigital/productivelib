@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "productivelib:upgrade_entity_filter"
+    }
+  ],
+  "result": {
+    "id": "productivelib:upgrade_entity_filter"
+  }
+}

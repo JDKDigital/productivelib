@@ -1,0 +1,41 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CWC",
+    "FBF",
+    "CWC"
+  ],
+  "key": {
+    "B": {
+      "item": "productivelib:upgrade_productivity_2"
+    },
+    "C": {
+      "tag": "c:fragments/draconic"
+    },
+    "W": {
+      "tag": "c:storage_blocks/wax"
+    },
+    "F": {
+      "item": "minecraft:item_frame"
+    }
+  },
+  "result": {
+    "id": "productivelib:upgrade_block"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:storage_blocks/wax"
+      }
+    },
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:tag_empty",
+        "tag": "c:fragments/draconic"
+      }
+    }
+  ]
+}

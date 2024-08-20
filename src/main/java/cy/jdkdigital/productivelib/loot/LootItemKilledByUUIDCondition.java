@@ -1,23 +1,15 @@
 package cy.jdkdigital.productivelib.loot;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import cy.jdkdigital.productivelib.ProductiveLib;
-import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.predicates.LocationCheck;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import net.neoforged.neoforge.common.ToolAction;
-import net.neoforged.neoforge.common.loot.CanToolPerformAction;
 
 import java.util.Set;
 import java.util.UUID;
@@ -45,5 +37,22 @@ public record LootItemKilledByUUIDCondition(UUID uuid) implements LootItemCondit
          return context.hasParam(LootContextParams.LAST_DAMAGE_PLAYER) && context.getParam(LootContextParams.LAST_DAMAGE_PLAYER).getUUID().equals(uuid);
       }
       return false;
+   }
+
+   public static Builder builder(final UUID uuid) {
+      return new Builder(uuid);
+   }
+
+   public static class Builder implements LootItemCondition.Builder {
+      private final UUID uuid;
+
+      public Builder(UUID uuid) {
+         this.uuid = uuid;
+      }
+
+      @Override
+      public LootItemCondition build() {
+         return new LootItemKilledByUUIDCondition(this.uuid);
+      }
    }
 }

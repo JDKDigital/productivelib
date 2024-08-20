@@ -7,11 +7,14 @@ import cy.jdkdigital.productivelib.loot.ItemLootModifier;
 import cy.jdkdigital.productivelib.loot.LootItemKilledByUUIDCondition;
 import cy.jdkdigital.productivelib.loot.OptionalLootItem;
 import cy.jdkdigital.productivelib.loot.condition.OptionalCopyBlockState;
+import cy.jdkdigital.productivelib.registry.ModDataComponents;
+import cy.jdkdigital.productivelib.registry.LibItems;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -35,6 +38,8 @@ public final class ProductiveLib
     public static final DeferredRegister<LootItemConditionType> LOOT_POOL_CONDITIONS = DeferredRegister.create(Registries.LOOT_CONDITION_TYPE, MODID);
     public static final DeferredRegister<MapCodec<? extends IGlobalLootModifier>> LOOT_SERIALIZERS = DeferredRegister.create(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, MODID);
     public static final DeferredRegister<MapCodec<? extends ICondition>> CONDITION_CODECS = DeferredRegister.create(NeoForgeRegistries.Keys.CONDITION_CODECS, MODID);
+    public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENTS = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, MODID);
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, MODID);
 
     public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<ItemLootModifier>> ITEM_MODIFIER = LOOT_SERIALIZERS.register("item_modifier", ItemLootModifier.CODEC);
     public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<IngredientModifier>> INGREDIENT_MODIFIER = LOOT_SERIALIZERS.register("ingredient_modifier", IngredientModifier.CODEC);
@@ -49,6 +54,11 @@ public final class ProductiveLib
         LOOT_POOL_FUNCTIONS.register(modEventBus);
         LOOT_POOL_CONDITIONS.register(modEventBus);
         CONDITION_CODECS.register(modEventBus);
+        DATA_COMPONENTS.register(modEventBus);
+        ITEMS.register(modEventBus);
+
+        LibItems.register();
+        ModDataComponents.register();
 
         container.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
     }

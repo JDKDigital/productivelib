@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SES",
+    "ETE",
+    "SDS"
+  ],
+  "key": {
+    "E": {
+      "tag": "c:gems/emerald"
+    },
+    "D": {
+      "tag": "c:gems/diamond"
+    },
+    "S": {
+      "tag": "c:rods/wooden"
+    },
+    "T": {
+      "item": "minecraft:honeycomb"
+    }
+  },
+  "result": {
+    "id": "productivelib:upgrade_base"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:mod_loaded",
+        "modid": "productivebees"
+      }
+    }
+  ]
+}
