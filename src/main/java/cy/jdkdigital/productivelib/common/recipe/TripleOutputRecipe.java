@@ -1,51 +1,56 @@
 package cy.jdkdigital.productivelib.common.recipe;
 
-import com.mojang.datafixers.Products;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.Container;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
-public abstract class TripleOutputRecipe implements Recipe<CraftingInput>
+public abstract class TripleOutputRecipe implements Recipe<RecipeInput>
 {
-    public final ResourceLocation id;
-    public final Ingredient input;
-    public final ItemStack output;
-    public final ItemStack secondary;
-    public final ItemStack tertiary;
+    private final Ingredient input;
+    private final ItemStack output;
+    private final ItemStack secondary;
+    private final ItemStack tertiary;
 
-    public TripleOutputRecipe(ResourceLocation id, Ingredient input, ItemStack output, ItemStack secondary, ItemStack tertiary) {
-        this.id = id;
+    public TripleOutputRecipe(Ingredient input, ItemStack output, ItemStack secondary, ItemStack tertiary) {
         this.input = input;
         this.output = output;
         this.secondary = secondary;
         this.tertiary = tertiary;
     }
 
-    protected static <T extends TripleOutputRecipe> Products.P5<RecordCodecBuilder.Mu<T>, ResourceLocation, Ingredient, ItemStack, ItemStack, ItemStack> codecStart(RecordCodecBuilder.Instance<T> instance) {
-        return instance.group(
-                ResourceLocation.CODEC.fieldOf("id").forGetter(m -> m.id),
-                Ingredient.CODEC.fieldOf("input").forGetter(m -> m.input),
-                ItemStack.CODEC.fieldOf("output").forGetter(m -> m.output),
-                ItemStack.CODEC.fieldOf("secondary").forGetter(m -> m.secondary),
-                ItemStack.CODEC.fieldOf("tertiary").forGetter(m -> m.tertiary)
-        );
+    public Ingredient input() {
+        return input;
     }
 
-    abstract int getInputSlot();
+    public ItemStack output() {
+        return output;
+    }
 
-    @Override
-    public boolean matches(CraftingInput container, Level level) {
-        return input.test(container.getItem(getInputSlot()));
+    public ItemStack secondary() {
+        return secondary;
+    }
+
+    public ItemStack tertiary() {
+        return tertiary;
     }
 
     @Override
-    public ItemStack assemble(CraftingInput container, HolderLookup.Provider provider) {
+    public boolean isSpecial() {
+        return true;
+    }
+
+    @Override
+    public boolean matches(RecipeInput container, Level level) {
+        return input.test(container.getItem(0)); // TODO change slot number to var
+    }
+
+    @Override
+    public ItemStack assemble(RecipeInput container, HolderLookup.Provider provider) {
         return ItemStack.EMPTY;
     }
 
@@ -57,5 +62,49 @@ public abstract class TripleOutputRecipe implements Recipe<CraftingInput>
     @Override
     public ItemStack getResultItem(HolderLookup.Provider provider) {
         return this.output.copy();
+    }
+
+    public static class Serializer<T extends TripleOutputRecipe> implements RecipeSerializer<T>
+    {
+        private MapCodec<T> CODEC;
+        public StreamCodec<RegistryFriendlyByteBuf, T> STREAM_CODEC;
+
+        public Serializer(Factory<T> constructor) {
+            CODEC = RecordCodecBuilder.mapCodec(
+                    builder -> builder.group(
+                                    Ingredient.CODEC.fieldOf("input").forGetter(TripleOutputRecipe::input),
+                                    ItemStack.CODEC.fieldOf("output").forGetter(TripleOutputRecipe::output),
+                                    ItemStack.OPTIONAL_CODEC.fieldOf("secondary").orElse(ItemStack.EMPTY).forGetter(TripleOutputRecipe::secondary),
+                                    ItemStack.OPTIONAL_CODEC.fieldOf("tertiary").orElse(ItemStack.EMPTY).forGetter(TripleOutputRecipe::tertiary)
+                            )
+                            .apply(builder, constructor::create)
+            );
+            STREAM_CODEC = StreamCodec.composite(
+                    Ingredient.CONTENTS_STREAM_CODEC,
+                    TripleOutputRecipe::input,
+                    ItemStack.STREAM_CODEC,
+                    TripleOutputRecipe::output,
+                    ItemStack.OPTIONAL_STREAM_CODEC,
+                    TripleOutputRecipe::secondary,
+                    ItemStack.OPTIONAL_STREAM_CODEC,
+                    TripleOutputRecipe::tertiary,
+                    constructor::create
+            );
+        }
+
+        @Override
+        public MapCodec<T> codec() {
+            return CODEC;
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {
+            return STREAM_CODEC;
+        }
+
+        @FunctionalInterface
+        public interface Factory<T extends TripleOutputRecipe> {
+            T create(Ingredient input, ItemStack output, ItemStack secondary, ItemStack tertiary);
+        }
     }
 }

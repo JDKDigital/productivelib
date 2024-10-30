@@ -1,11 +1,9 @@
 package cy.jdkdigital.productivelib;
 
 import com.mojang.serialization.MapCodec;
+import cy.jdkdigital.productivelib.common.condition.LazyCondition;
 import cy.jdkdigital.productivelib.crafting.condition.FluidTagEmptyCondition;
-import cy.jdkdigital.productivelib.loot.IngredientModifier;
-import cy.jdkdigital.productivelib.loot.ItemLootModifier;
-import cy.jdkdigital.productivelib.loot.LootItemKilledByUUIDCondition;
-import cy.jdkdigital.productivelib.loot.OptionalLootItem;
+import cy.jdkdigital.productivelib.loot.*;
 import cy.jdkdigital.productivelib.loot.condition.OptionalCopyBlockState;
 import cy.jdkdigital.productivelib.registry.ModDataComponents;
 import cy.jdkdigital.productivelib.registry.LibItems;
@@ -43,10 +41,13 @@ public final class ProductiveLib
 
     public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<ItemLootModifier>> ITEM_MODIFIER = LOOT_SERIALIZERS.register("item_modifier", ItemLootModifier.CODEC);
     public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<IngredientModifier>> INGREDIENT_MODIFIER = LOOT_SERIALIZERS.register("ingredient_modifier", IngredientModifier.CODEC);
+    public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<WeightedIngredientModifier>> WEIGHTED_INGREDIENT_MODIFIER = LOOT_SERIALIZERS.register("weighted_ingredient_modifier", WeightedIngredientModifier.CODEC);
+    public static final DeferredHolder<MapCodec<? extends IGlobalLootModifier>, MapCodec<ContainerContentsModifier>> CONTAINER_CONTENTS_MODIFIER = LOOT_SERIALIZERS.register("container_contents_modifier", ContainerContentsModifier.CODEC);
     public static final DeferredHolder<LootPoolEntryType, LootPoolEntryType> OPTIONAL_LOOT_ITEM = LOOT_POOL_ENTRIES.register("optional_loot_item", () -> new LootPoolEntryType(OptionalLootItem.CODEC));
     public static final DeferredHolder<LootItemFunctionType<?>, LootItemFunctionType<?>> OPTIONAL_BLOCK_STATE_PROPERTY = LOOT_POOL_FUNCTIONS.register("optional_copy_block_state", () -> new LootItemFunctionType(OptionalCopyBlockState.CODEC));
     public static final DeferredHolder<LootItemConditionType, LootItemConditionType> KILLED_BY_UUID = LOOT_POOL_CONDITIONS.register("killed_by_uuid", () -> new LootItemConditionType(LootItemKilledByUUIDCondition.CODEC));
     public static final DeferredHolder<MapCodec<? extends ICondition>, MapCodec<FluidTagEmptyCondition>> FLUID_TAG_EMPTY_CONDITION = CONDITION_CODECS.register("fluid_tag_empty", () -> FluidTagEmptyCondition.CODEC);
+    public static final DeferredHolder<MapCodec<? extends ICondition>, MapCodec<LazyCondition>> LAZY_CONDITION = CONDITION_CODECS.register("lazy", () -> LazyCondition.CODEC);
 
     public ProductiveLib(IEventBus modEventBus, ModContainer container) {
         LOOT_SERIALIZERS.register(modEventBus);

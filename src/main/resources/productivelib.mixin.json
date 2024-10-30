@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "cy.jdkdigital.productivelib.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "BeeHiveReleaseEventMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "refmap": "productivetrees.refmap.json",
+  "minVersion": "0.8.5"
+}

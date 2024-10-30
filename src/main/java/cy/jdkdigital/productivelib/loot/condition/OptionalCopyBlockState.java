@@ -11,6 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -33,7 +34,7 @@ public class OptionalCopyBlockState extends LootItemConditionalFunction
             builder -> commonFields(builder)
                     .and(
                             builder.group(
-                                    BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter(optionalCopyBlockState -> optionalCopyBlockState.block),
+                                    BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").orElse(Holder.direct(Blocks.AIR)).forGetter(optionalCopyBlockState -> optionalCopyBlockState.block),
                                     Codec.STRING.listOf().fieldOf("properties").orElse(List.of()).forGetter(optionalCopyBlockState -> optionalCopyBlockState.properties.stream().map(Property::getName).toList())
                             )
                     )
