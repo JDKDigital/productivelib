@@ -14,10 +14,14 @@ public abstract class FluidTankBlockEntity extends CapabilityBlockEntity
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, FluidTankBlockEntity blockEntity) {
-        if (++blockEntity.tankTick > 21) {
+        if (++blockEntity.tankTick >= blockEntity.tankTickRate()) {
             blockEntity.tankTick = 0;
             blockEntity.tickFluidTank(level, pos, state, blockEntity);
         }
+    }
+
+    public int tankTickRate() {
+        return 21;
     }
 
     public abstract void tickFluidTank(Level level, BlockPos pos, BlockState state, FluidTankBlockEntity blockEntity);

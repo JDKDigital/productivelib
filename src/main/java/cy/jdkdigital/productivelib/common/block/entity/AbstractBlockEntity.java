@@ -36,7 +36,7 @@ public class AbstractBlockEntity extends BlockEntity
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
-        return saveWithId(provider);
+        return this.saveWithoutMetadata(provider);
     }
 
     @Override

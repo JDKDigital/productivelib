@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 public class ManualSlotItemHandler extends SlotItemHandler
 {
     InventoryHandlerHelper.BlockEntityItemStackHandler handler;
+    boolean enabled = true;
 
     public ManualSlotItemHandler(InventoryHandlerHelper.BlockEntityItemStackHandler itemHandler, int index, int xPosition, int yPosition) {
         super(itemHandler, index, xPosition, yPosition);
@@ -37,6 +38,12 @@ public class ManualSlotItemHandler extends SlotItemHandler
     }
 
     @Override
+    public void set(ItemStack stack) {
+        this.handler.setStackInSlot(this.index, stack);
+        this.setChanged();
+    }
+
+    @Override
     public int getMaxStackSize() {
         if (this.getItemHandler() instanceof InventoryHandlerHelper.UpgradeHandler) {
             return 1;
@@ -50,5 +57,18 @@ public class ManualSlotItemHandler extends SlotItemHandler
             return 1;
         }
         return super.getMaxStackSize(stack);
+    }
+
+    public void enable() {
+        this.enabled = true;
+    }
+
+    public void disable() {
+        this.enabled = false;
+    }
+
+    @Override
+    public boolean isActive() {
+        return enabled;
     }
 }

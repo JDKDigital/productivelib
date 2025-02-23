@@ -16,6 +16,7 @@ public class LibItems
     public static final DeferredHolder<Item, ? extends Item> UPGRADE_PRODUCTIVITY_3 = createItem("upgrade_productivity_3", () -> new UpgradeItem((new Item.Properties())));
     public static final DeferredHolder<Item, ? extends Item> UPGRADE_PRODUCTIVITY_4 = createItem("upgrade_productivity_4", () -> new UpgradeItem((new Item.Properties())));
     public static final DeferredHolder<Item, ? extends Item> UPGRADE_TIME = createItem("upgrade_time", () -> new UpgradeItem((new Item.Properties())));
+    public static final DeferredHolder<Item, ? extends Item> UPGRADE_TIME_2 = createItem("upgrade_time_2", () -> new UpgradeItem((new Item.Properties())));
     public static final DeferredHolder<Item, ? extends Item> UPGRADE_RANGE = createItem("upgrade_range", () -> new UpgradeItem((new Item.Properties())));
     public static final DeferredHolder<Item, ? extends Item> UPGRADE_ENTITY_FILTER = createItem("upgrade_entity_filter", () -> new FilterUpgradeItem((new Item.Properties())));
     public static final DeferredHolder<Item, ? extends Item> UPGRADE_SIMULATOR = createItem("upgrade_simulator", () -> new UpgradeItem((new Item.Properties())));

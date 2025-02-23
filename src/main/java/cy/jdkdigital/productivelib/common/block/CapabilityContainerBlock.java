@@ -1,7 +1,7 @@
 package cy.jdkdigital.productivelib.common.block;
 
 import cy.jdkdigital.productivelib.common.block.entity.CapabilityBlockEntity;
-import cy.jdkdigital.productivelib.common.block.entity.UpgradeableBlockEntity;
+import cy.jdkdigital.productivelib.common.block.entity.IUpgradeableBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Containers;
 import net.minecraft.world.level.Level;
@@ -30,8 +30,8 @@ public abstract class CapabilityContainerBlock extends BaseEntityBlock
                     }
                 }
             }
-            if (blockEntity instanceof UpgradeableBlockEntity) {
-                IItemHandler upgradeHandler = ((UpgradeableBlockEntity) blockEntity).getUpgradeHandler();
+            if (blockEntity instanceof IUpgradeableBlockEntity) {
+                IItemHandler upgradeHandler = ((IUpgradeableBlockEntity) blockEntity).getUpgradeHandler();
                 if (upgradeHandler != null) {
                     for (int slot = 0; slot < upgradeHandler.getSlots(); ++slot) {
                         Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), upgradeHandler.getStackInSlot(slot));

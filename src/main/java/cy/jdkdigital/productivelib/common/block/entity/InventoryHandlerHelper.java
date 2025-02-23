@@ -4,6 +4,7 @@ import cy.jdkdigital.productivelib.common.item.AbstractUpgradeItem;
 import cy.jdkdigital.productivelib.event.CollectValidUpgradesEvent;
 import cy.jdkdigital.productivelib.registry.LibItems;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -105,6 +106,20 @@ public class InventoryHandlerHelper
 
         public boolean isInputSlotItem(int slot, ItemStack item) {
             return (slot == BOTTLE_SLOT && isContainerItem(item.getItem())) || (slot == FLUID_ITEM_OUTPUT_SLOT && !isContainerItem(item.getItem()));
+        }
+
+        @Override
+        public void setSize(int size) {
+            var newStacks = NonNullList.withSize(size, ItemStack.EMPTY);
+
+            for (int i = 0; i < this.stacks.size(); i++) {
+                ItemStack stack = this.stacks.get(i);
+                if (!stack.isEmpty() && i < size) {
+                    newStacks.set(i, stack);
+                }
+            }
+
+            this.stacks = newStacks;
         }
 
         @Override

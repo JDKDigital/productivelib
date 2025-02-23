@@ -18,10 +18,11 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 public class ClientModEventHandler
 {
     public static ResourceKey<CreativeModeTab> PB_TAB_KEY = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath("productivebees", "productivebees"));
+    public static ResourceKey<CreativeModeTab> PT_TAB_KEY = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath("productivetrees", "productivetrees"));
 
     @SubscribeEvent
     public static void tabContents(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey().equals(PB_TAB_KEY)) {
+        if (event.getTabKey().equals(PB_TAB_KEY) || event.getTabKey().equals(PT_TAB_KEY)) {
             for (DeferredHolder<Item, ? extends Item> item: ProductiveLib.ITEMS.getEntries()) {
                 event.accept(new ItemStack(item.get(), 1));
             }

@@ -1,5 +1,6 @@
 package cy.jdkdigital.productivelib.common.block.entity;
 
+import cy.jdkdigital.productivelib.util.MultiFluidTank;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -7,9 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.EnergyStorage;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -37,7 +36,7 @@ public abstract class CapabilityBlockEntity extends AbstractBlockEntity implemen
     public EnergyStorage getEnergyHandler() {
         return null;
     }
-    public FluidTank getFluidHandler() {
+    public IFluidHandler getFluidHandler() {
         return null;
     }
 
@@ -54,15 +53,17 @@ public abstract class CapabilityBlockEntity extends AbstractBlockEntity implemen
             tag.put("energy", energyHandler.serializeNBT(provider));
         }
 
-        FluidTank fluidHandler = getFluidHandler();
-        if (fluidHandler != null) {
+        IFluidHandler fluidHandler = getFluidHandler();
+        if (fluidHandler instanceof FluidTank fluidTank) {
             CompoundTag nbt = new CompoundTag();
-            fluidHandler.writeToNBT(provider, nbt);
+            fluidTank.writeToNBT(provider, nbt);
             tag.put("fluid", nbt);
+        } else if (fluidHandler instanceof MultiFluidTank fluidTank) {
+            tag.put("fluid", fluidTank.serializeNBT(provider));
         }
 
-        if (this instanceof UpgradeableBlockEntity) {
-            IItemHandler upgradeHandler = ((UpgradeableBlockEntity) this).getUpgradeHandler();
+        if (this instanceof IUpgradeableBlockEntity) {
+            IItemHandler upgradeHandler = ((IUpgradeableBlockEntity) this).getUpgradeHandler();
             if (upgradeHandler instanceof ItemStackHandler serializable) {
                 tag.put("upgrades", serializable.serializeNBT(provider));
             }
@@ -86,15 +87,17 @@ public abstract class CapabilityBlockEntity extends AbstractBlockEntity implemen
             }
         }
 
+        IFluidHandler fluidHandler = getFluidHandler();
         if (tag.contains("fluid")) {
-            FluidTank fluidHandler = getFluidHandler();
-            if (fluidHandler != null) {
-                fluidHandler.readFromNBT(provider, tag.getCompound("fluid"));
+            if (fluidHandler instanceof FluidTank fluidTank) {
+                fluidTank.readFromNBT(provider, tag.getCompound("fluid"));
+            } else if (fluidHandler instanceof MultiFluidTank fluidTank) {
+                fluidTank.deserializeNBT(provider, tag.get("fluid"));
             }
         }
 
-        if (tag.contains("upgrades") && this instanceof UpgradeableBlockEntity) {
-            IItemHandler upgradeHandler = ((UpgradeableBlockEntity) this).getUpgradeHandler();
+        if (tag.contains("upgrades") && this instanceof IUpgradeableBlockEntity) {
+            IItemHandler upgradeHandler = ((IUpgradeableBlockEntity) this).getUpgradeHandler();
             if (upgradeHandler instanceof ItemStackHandler serializable) {
                 serializable.deserializeNBT(provider, tag.getCompound("upgrades"));
             }

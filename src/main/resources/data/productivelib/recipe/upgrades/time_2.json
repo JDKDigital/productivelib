@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "UHU",
+    "SBS",
+    "UHU"
+  ],
+  "key": {
+    "B": {
+      "item": "productivelib:upgrade_base"
+    },
+    "H": {
+      "item": "minecraft:honey_block"
+    },
+    "S": {
+      "tag": "c:nether_stars"
+    },
+    "U": {
+      "item": "productivelib:upgrade_time"
+    }
+  },
+  "result": {
+    "id": "productivelib:upgrade_time_2"
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:mod_loaded",
+        "modid": "productivebees"
+      }
+    }
+  ]
+}
