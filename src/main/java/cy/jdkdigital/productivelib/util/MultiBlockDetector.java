@@ -32,6 +32,10 @@ public class MultiBlockDetector
         }
 
         BlockState controllerState = level.getBlockState(controllerPos);
+        if (controllerState.isAir()) {
+            throw new InvalidStructureException("Invalid controller", controllerPos);
+        }
+
         Direction controllerFacing = controllerState.getValue(BlockStateProperties.HORIZONTAL_FACING);
 
         List<BlockPos> peripherals = new ArrayList<>();

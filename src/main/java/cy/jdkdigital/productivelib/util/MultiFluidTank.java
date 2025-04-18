@@ -80,7 +80,9 @@ public class MultiFluidTank implements IFluidHandler, INBTSerializable
             }
         }
         if (!fluidAction.simulate()) {
-            this.fluids.add(fluidStack.copy());
+            var fluidCopy = fluidStack.copy();
+            fluidCopy.setAmount(maxFillAmount);
+            this.fluids.add(fluidCopy);
             onContentsChanged(true);
         }
         return maxFillAmount;

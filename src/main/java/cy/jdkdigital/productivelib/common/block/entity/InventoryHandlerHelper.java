@@ -240,13 +240,23 @@ public class InventoryHandlerHelper
         }
 
         @Override
-        public boolean isInsertableSlot(int slot) {
+        public boolean isInputSlot(int slot) {
             return false;
+        }
+
+        @Override
+        public boolean isInsertableSlot(int slot) {
+            return true;
         }
 
         @Override
         public boolean isInputSlotItem(int slot, ItemStack item) {
             return item.getItem() instanceof AbstractUpgradeItem && isValidUpgrade(item);
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            return 1;
         }
 
         public boolean isValidUpgrade(ItemStack item) {

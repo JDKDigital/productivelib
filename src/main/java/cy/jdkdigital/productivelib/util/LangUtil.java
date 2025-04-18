@@ -19,8 +19,10 @@ public class LangUtil
     public static String capName(String name) {
         String[] nameParts = name.split("_");
 
-        for (int i = 0; i < nameParts.length; i++) {
-            nameParts[i] = nameParts[i].substring(0, 1).toUpperCase() + nameParts[i].substring(1);
+        if (nameParts.length > 0) {
+            for (int i = 0; i < nameParts.length; i++) {
+                nameParts[i] = nameParts[i].substring(0, 1).toUpperCase() + nameParts[i].substring(1);
+            }
         }
 
         return String.join(" ", nameParts);
@@ -29,8 +31,10 @@ public class LangUtil
     public static String pluralCapName(String name) {
         String[] capNameParts = capName(name).split(" ");
 
-        int i = capNameParts.length - 1;
-        capNameParts[i] = pluralMap.containsKey(capNameParts[i]) ? pluralMap.get(capNameParts[i]) : capNameParts[i] + "s";
+        if (capNameParts.length > 0) {
+            int i = capNameParts.length - 1;
+            capNameParts[i] = pluralMap.containsKey(capNameParts[i]) ? pluralMap.get(capNameParts[i]) : capNameParts[i] + "s";
+        }
 
         return String.join(" ", capNameParts);
     }
