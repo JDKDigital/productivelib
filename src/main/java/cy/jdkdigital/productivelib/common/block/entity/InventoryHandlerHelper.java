@@ -1,8 +1,15 @@
 package cy.jdkdigital.productivelib.common.block.entity;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import cy.jdkdigital.productivelib.common.item.AbstractUpgradeItem;
 import cy.jdkdigital.productivelib.event.CollectValidUpgradesEvent;
-import cy.jdkdigital.productivelib.registry.LibItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -13,13 +20,6 @@ import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.ItemStackHandler;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 public class InventoryHandlerHelper
 {
@@ -35,22 +35,30 @@ public class InventoryHandlerHelper
     }
 
     private static int getAvailableOutputSlot(BlockEntityItemStackHandler handler, ItemStack insertStack, List<Integer> blacklistedSlots) {
-        int emptySlot = 0;
         for (int slot : handler.getOutputSlots()) {
             if (blacklistedSlots.contains(slot)) {
                 continue;
             }
+
             ItemStack stack = handler.getStackInSlot(slot);
-            if (stack.isEmpty() && emptySlot == 0) {
-                emptySlot = slot;
-            } else if (stack.getItem().equals(insertStack.getItem()) && (stack.getCount() + insertStack.getCount()) <= stack.getMaxStackSize()) {
-                // TODO removed some Gene specific code, find a way to abstract it
-                if (stack.isEmpty() || areItemsAndTagsEqual(stack, insertStack)) {
-                    return slot;
-                }
+            if (stack.isEmpty() || canCombineStacks(insertStack, stack)) {
+                return slot;
             }
         }
-        return emptySlot;
+
+        return -1;
+    }
+
+    private static boolean canCombineStacks(ItemStack stack1, ItemStack stack2) {
+        if (!areItemsAndTagsEqual(stack1, stack2)) {
+            return false;
+        }
+
+        if (stack1.getCount() + stack2.getCount() > stack1.getMaxStackSize()) {
+            return false;
+        }
+
+        return true;
     }
 
     public static boolean areItemsAndTagsEqual(ItemStack stack1, ItemStack stack2) {
@@ -178,7 +186,7 @@ public class InventoryHandlerHelper
             while (iterator.hasNext()) {
                 stack.setCount(iterator.next());
                 int slot = getAvailableOutputSlot(this, stack);
-                if (slot > 0) {
+                if (slot != -1) {
                     ItemStack existingStack = this.getStackInSlot(slot);
                     if (existingStack.isEmpty()) {
                         setStackInSlot(slot, stack.copy());
