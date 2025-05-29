@@ -17,7 +17,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 
-//minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
+minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
 
 runs {
     configureEach {
@@ -61,6 +61,7 @@ dependencies {
 
     implementation "curse.maven:jei-238222:5567933"
     implementation "curse.maven:jade-324717:5444008"
+    implementation "curse.maven:reap-mod-244256:5608983"
 }
 
 tasks.withType(ProcessResources).configureEach {

@@ -15,6 +15,7 @@
   "item.productivelib.upgrade_time": "Upgrade: Speed",
   "item.productivelib.upgrade_time_2": "Upgrade: Speedier",
   "item.productivelib.upgrade_simulator": "Upgrade: Simulator",
+  "item.productivelib.upgrade_stability": "Upgrade: Stability",
   "productivelib.information.upgrade.install_help": "Sneak right click on block to install",
   "productivelib.information.upgrade.valid_blocks.list_header": "Valid blocks:",
   "productivelib.information.upgrade.valid_blocks.list_item": " - %s",

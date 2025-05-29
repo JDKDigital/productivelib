@@ -1,7 +1,6 @@
 package cy.jdkdigital.productivelib.util;
 
 import com.mojang.datafixers.util.Pair;
-import cy.jdkdigital.productivelib.ProductiveLib;
 import cy.jdkdigital.productivelib.common.block.IMultiBlockController;
 import cy.jdkdigital.productivelib.common.block.IMultiBlockPeripheral;
 import cy.jdkdigital.productivelib.common.block.entity.IMultiBlockPeripheralBlockEntity;
@@ -21,10 +20,15 @@ import net.neoforged.neoforge.common.util.INBTSerializable;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MultiBlockDetector
 {
     public static MultiBlockData detectStructure(Level level, BlockPos controllerPos, TagKey<Block> wallBlocks, @Nullable TagKey<Block> bottomBlocks, boolean hollow, boolean optionalCorners, int maxVolume, int maxCirc, int maxHeight) throws InvalidStructureException {
+        return detectStructure(level, controllerPos, wallBlocks, bottomBlocks, hollow, optionalCorners, false, maxVolume, maxCirc, maxHeight);
+    }
+
+    public static MultiBlockData detectStructure(Level level, BlockPos controllerPos, TagKey<Block> wallBlocks, @Nullable TagKey<Block> bottomBlocks, boolean hollow, boolean optionalCorners, boolean uniformBottom, int maxVolume, int maxCirc, int maxHeight) throws InvalidStructureException {
         // Controller can be placed in any part of the structure wall, so we need to go up to the top first. Top is any valid structure block above the controller
         BlockPos top = controllerPos.mutable();
         while (top.getY() < level.getMaxBuildHeight() && level.getBlockState(top.above()).is(wallBlocks)) {
@@ -53,11 +57,17 @@ public class MultiBlockDetector
 
         if (bottomBlocks != null) {
             if (!level.getBlockState(bottomCornerRelativePosition).is(bottomBlocks)) {
-                throw new InvalidStructureException("Invalid bottom starting block", bottomCornerRelativePosition.immutable());
+                throw new InvalidStructureException("Invalid bottom starting block", topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).mutable());
             }
 
             // validate bottom
-            List<BlockPos> notBottomBlocks = BlockPos.betweenClosedStream(topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).below(height), topCorners.getSecond().relative(controllerFacing).relative(controllerFacing.getClockWise()).below(height)).filter(pos -> !level.getBlockState(pos).is(bottomBlocks)).toList();
+            AtomicReference<BlockState> firstBottomBlock = new AtomicReference<>();
+            List<BlockPos> notBottomBlocks = BlockPos.betweenClosedStream(topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).below(height), topCorners.getSecond().relative(controllerFacing).relative(controllerFacing.getClockWise()).below(height)).filter(pos -> {
+                if (firstBottomBlock.get() == null) {
+                    firstBottomBlock.set(level.getBlockState(pos));
+                }
+                return uniformBottom ? !level.getBlockState(pos).is(firstBottomBlock.get().getBlock()) : !level.getBlockState(pos).is(bottomBlocks);
+            }).toList();
             if (!notBottomBlocks.isEmpty()) {
                 throw new InvalidStructureException("Invalid bottom block", notBottomBlocks.getFirst());
             }

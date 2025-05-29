@@ -25,6 +25,7 @@ public class LibItems
     public static final DeferredHolder<Item, ? extends Item> UPGRADE_GENE_SAMPLER = createItem("upgrade_gene_sampler", () -> new UpgradeItem((new Item.Properties())));
     public static final DeferredHolder<Item, ? extends Item> UPGRADE_ANTI_TELEPORT = createItem("upgrade_anti_teleport", () -> new UpgradeItem((new Item.Properties())));
     public static final DeferredHolder<Item, ? extends Item> UPGRADE_BLOCK = createItem("upgrade_block", () -> new UpgradeItem((new Item.Properties())));
+    public static final DeferredHolder<Item, ? extends Item> UPGRADE_STABILITY = createItem("upgrade_stability", () -> new UpgradeItem((new Item.Properties())));
 
     public static <I extends Item> DeferredHolder<Item, I> createItem(String name, Supplier<? extends I> supplier) {
         return ProductiveLib.ITEMS.register(name, supplier);

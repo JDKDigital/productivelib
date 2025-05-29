@@ -1,6 +1,7 @@
 package cy.jdkdigital.productivelib.common.item;
 
 import cy.jdkdigital.productivelib.common.block.entity.IUpgradeableBlockEntity;
+import cy.jdkdigital.productivelib.common.block.entity.InventoryHandlerHelper;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +27,7 @@ public abstract class AbstractUpgradeItem extends Item
                 if (tileEntity instanceof IUpgradeableBlockEntity && ((IUpgradeableBlockEntity) tileEntity).acceptsUpgrades()) {
                     AtomicBoolean hasInsertedUpgrade = new AtomicBoolean(false);
                     IItemHandler handler = ((IUpgradeableBlockEntity) tileEntity).getUpgradeHandler();
-                    if (handler != null) {
+                    if (handler instanceof InventoryHandlerHelper.UpgradeHandler upgradeHandler && upgradeHandler.isValidUpgrade(context.getItemInHand())) {
                         for (int slot = 0; slot < handler.getSlots(); ++slot) {
                             if (handler.getStackInSlot(slot).equals(ItemStack.EMPTY)) {
                                 handler.insertItem(slot, new ItemStack(context.getItemInHand().getItem()), false);

@@ -14,6 +14,9 @@ license="${mod_license}"
 #issueTrackerURL="https://change.me.to.your.issue.tracker.example.invalid/" #optional
 # A list of mods - how many allowed here is determined by the individual mod loader
 
+[[accessTransformers]]
+    file="META-INF/accesstransformer.cfg"
+
 [[mixins]]
     config="productivelib.mixin.json"
 
