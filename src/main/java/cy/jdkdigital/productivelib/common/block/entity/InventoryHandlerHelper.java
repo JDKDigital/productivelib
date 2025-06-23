@@ -35,18 +35,22 @@ public class InventoryHandlerHelper
     }
 
     private static int getAvailableOutputSlot(BlockEntityItemStackHandler handler, ItemStack insertStack, List<Integer> blacklistedSlots) {
+        int emptySlot = -1;
         for (int slot : handler.getOutputSlots()) {
             if (blacklistedSlots.contains(slot)) {
                 continue;
             }
 
             ItemStack stack = handler.getStackInSlot(slot);
-            if (stack.isEmpty() || canCombineStacks(insertStack, stack)) {
+
+            if (stack.isEmpty() && emptySlot == -1) {
+                emptySlot = slot;
+            } else if (!stack.isEmpty() && canCombineStacks(insertStack, stack)) {
                 return slot;
             }
         }
 
-        return -1;
+        return emptySlot;
     }
 
     private static boolean canCombineStacks(ItemStack stack1, ItemStack stack2) {
