@@ -14,6 +14,21 @@ public class LangUtil
         put("Peach", "Peaches");
         put("Copoazu", "Copoazu");
         put("Cempedak", "Cempedak");
+        put("Potatos", "Potatoes");
+        put("Kadsura", "Kadsura");
+        put("Blackberry", "Blackberries");
+        put("Blueberry", "Blueberries");
+        put("Boysenberry", "Boysenberries");
+        put("Cloudberry", "Cloudberries");
+        put("Cranberry", "Cranberries");
+        put("Golden Raspberry", "Golden Raspberries");
+        put("Gooseberry", "Gooseberries");
+        put("Huckleberry", "Huckleberries");
+        put("Lingoberry", "Lingoberries");
+        put("Miracle Berry", "Miracle Berries");
+        put("Raspberry", "Raspberries");
+        put("Thimbleberry", "Thimbleberries");
+        put("Thimbleberry", "Thimbleberries");
     }};
 
     public static String capName(String name) {

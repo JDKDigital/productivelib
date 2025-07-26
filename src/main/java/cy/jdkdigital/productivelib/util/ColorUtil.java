@@ -91,4 +91,13 @@ public class ColorUtil
 
         return A << 24 | R << 16 | G << 8 | B;
     }
+
+    public static int darkenColor(int color, float ratio){
+        int a = (color >> 24) & 0xFF;
+        int r = (int) (((color >> 16) & 0xFF) * ratio);
+        int g = (int) (((color >> 8) & 0xFF) * ratio);
+        int b = (int) ((color & 0xFF) * ratio);
+
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import cy.jdkdigital.productivelib.ProductiveLib;
 import cy.jdkdigital.productivelib.common.item.AbstractUpgradeItem;
 import cy.jdkdigital.productivelib.event.CollectValidUpgradesEvent;
 import net.minecraft.core.HolderLookup;
@@ -210,7 +211,7 @@ public class InventoryHandlerHelper
             List<Integer> usedSlots = new ArrayList<>();
             for (ItemStack stack : stacks) {
                 int slot = getAvailableOutputSlot(this, stack, usedSlots);
-                if (slot == 0) {
+                if (slot < 0) {
                     return false;
                 }
             }

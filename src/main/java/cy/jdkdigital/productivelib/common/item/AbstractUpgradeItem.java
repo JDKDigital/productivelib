@@ -30,7 +30,9 @@ public abstract class AbstractUpgradeItem extends Item
                     if (handler instanceof InventoryHandlerHelper.UpgradeHandler upgradeHandler && upgradeHandler.isValidUpgrade(context.getItemInHand())) {
                         for (int slot = 0; slot < handler.getSlots(); ++slot) {
                             if (handler.getStackInSlot(slot).equals(ItemStack.EMPTY)) {
-                                handler.insertItem(slot, new ItemStack(context.getItemInHand().getItem()), false);
+                                var upgradeStack = context.getItemInHand().copy();
+                                upgradeStack.setCount(1);
+                                handler.insertItem(slot, upgradeStack, false);
                                 hasInsertedUpgrade.set(true);
                                 break;
                             }

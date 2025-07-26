@@ -62,9 +62,10 @@ public class MultiBlockDetector
             while (height < maxHeight && !level.getBlockState(bottomCornerRelativePosition.move(Direction.DOWN)).is(bottomBlocks)) {
                 height++;
             }
+            height++;
 
             if (!level.getBlockState(bottomCornerRelativePosition).is(bottomBlocks)) {
-                throw new InvalidStructureException("Invalid bottom starting block", topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).mutable());
+                throw new InvalidStructureException("Invalid or missing bottom starting block. Valid blocks are " + bottomBlocks, topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).mutable());
             }
 
             // validate bottom
@@ -76,7 +77,7 @@ public class MultiBlockDetector
                 return uniformBottom ? !level.getBlockState(pos).is(firstBottomBlock.get().getBlock()) : !level.getBlockState(pos).is(bottomBlocks);
             }).toList();
             if (!notBottomBlocks.isEmpty()) {
-                throw new InvalidStructureException("Invalid bottom block", notBottomBlocks.getFirst());
+                throw new InvalidStructureException("Invalid or missing bottom block." + (uniformBottom ? "All bottom blocks must be of the same type." : ""), notBottomBlocks.getFirst());
             }
         } else {
             // check how far the wall under the controller continues
@@ -95,18 +96,21 @@ public class MultiBlockDetector
 
         // validate each ring between top and bottom
         for (int i = 1; i <= height; i++) {
-            // skip validating lowest ring if corners can be empty
-            if (optionalCorners && i == height) continue;
+            // skip validating lowest ring if corners can be empty and there's no wall block in the start position
+            if (optionalCorners && i == height && !level.getBlockState(top.below(i)).is(wallBlocks)) continue;
             findStructureSliceCorners(level, controllerPos, controllerFacing.getClockWise(), top.below(i), wallBlocks, optionalCorners, maxCirc, peripherals);
         }
 
-        int volume = (int) BlockPos.betweenClosedStream(topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()), topCorners.getSecond().relative(controllerFacing).relative(controllerFacing.getClockWise()).below(height)).count();
+        int volume = (int) BlockPos.betweenClosedStream(topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()), topCorners.getSecond().relative(controllerFacing).relative(controllerFacing.getClockWise()).below(height - 1)).count();
         if (volume > maxVolume) {
             throw new InvalidStructureException("Internal structure area is too big " + volume + "/" + maxVolume, controllerPos);
         }
 
         if (hollow) {
-            List<BlockPos> notAirBlocks = BlockPos.betweenClosedStream(topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()), topCorners.getSecond().relative(controllerFacing).relative(controllerFacing.getClockWise()).below(height)).filter(pos -> !level.getBlockState(pos).isAir()).toList();
+            List<BlockPos> notAirBlocks = BlockPos.betweenClosedStream(
+                    topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()),
+                    topCorners.getSecond().relative(controllerFacing).relative(controllerFacing.getClockWise()).below(height - 1)
+            ).filter(pos -> !level.getBlockState(pos).isAir()).toList();
             if (!notAirBlocks.isEmpty()) {
                 throw new InvalidStructureException("Internal structure area is not clear", notAirBlocks.getFirst());
             }

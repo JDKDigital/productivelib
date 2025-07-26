@@ -18,7 +18,7 @@ license="${mod_license}"
     file="META-INF/accesstransformer.cfg"
 
 [[mixins]]
-    config="productivelib.mixin.json"
+    config="${mod_id}.mixin.json"
 
 [[mods]]
     modId="${mod_id}"
