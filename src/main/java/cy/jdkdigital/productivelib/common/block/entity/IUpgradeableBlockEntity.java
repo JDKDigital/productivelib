@@ -24,7 +24,7 @@ public interface IUpgradeableBlockEntity
         if (handler != null) {
             for (int slot = 0; slot < handler.getSlots(); ++slot) {
                 ItemStack stack = handler.getStackInSlot(slot);
-                if (stack.getItem().equals(item)) {
+                if (stack.is(item)) {
                     numberOfUpgrades.getAndIncrement();
                 }
             }
@@ -37,7 +37,7 @@ public interface IUpgradeableBlockEntity
         IItemHandler handler = getUpgradeHandler();
         if (handler != null) {
             for (int slot = 0; slot < handler.getSlots(); ++slot) {
-                if (upgradeItem == null || handler.getStackInSlot(slot).getItem().equals(upgradeItem)) {
+                if (upgradeItem == null || handler.getStackInSlot(slot).is(upgradeItem)) {
                     upgrades.add(handler.getStackInSlot(slot));
                 }
             }
