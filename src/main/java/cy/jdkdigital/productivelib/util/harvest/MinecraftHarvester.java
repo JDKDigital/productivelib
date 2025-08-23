@@ -66,13 +66,13 @@ public class MinecraftHarvester
                 var dropStack = cropBlock.getCloneItemStack(level, pos, cropBlockState);
                 dropStack.setCount(j + (i == 3 ? 1 : 0));
                 Block.popResource(level, pos, dropStack);
-                level.playSound(null, pos, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 0.8F + level.random.nextFloat() * 0.4F);
+                level.playSound(null, pos, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 0.2F, 0.8F + level.random.nextFloat() * 0.4F);
                 level.setBlock(pos, cropBlockState.setValue(SweetBerryBushBlock.AGE, 1), 2);
             }
         } else {
             // right click crop harvest
             Player fakePlayer = FakePlayerFactory.get((ServerLevel) level, new GameProfile(HarvestCompatHandler.FARMER_UUID, "productive_farmer"));
-            cropBlockState.useWithoutItem(level, fakePlayer, new BlockHitResult(Vec3.ZERO, Direction.DOWN, pos, true));
+            cropBlockState.useWithoutItem(level, fakePlayer, new BlockHitResult(Vec3.ZERO, Direction.UP, pos, true));
 
             // If it's not harvested, destroy instead
             if (isCropValid(level, pos)) {
