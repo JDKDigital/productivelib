@@ -16,6 +16,7 @@
   "item.productivelib.upgrade_time_2": "Aprimoramento: Mais Velocidade",
   "item.productivelib.upgrade_simulator": "Aprimoramento: Simulador",
   "item.productivelib.upgrade_stability": "Aprimoramento: Estabilidade",
+  "item.productivelib.upgrade_pollen_sieve": "Aprimoramento: Peneira de Pólen",
   "productivelib.information.upgrade.install_help": "Agache e clique com o botão direito no bloco para instalar",
   "productivelib.information.upgrade.valid_blocks.list_header": "Blocos válidos:",
   "productivelib.information.upgrade.valid_blocks.list_item": " - %s",
