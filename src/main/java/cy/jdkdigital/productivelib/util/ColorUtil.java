@@ -1,8 +1,6 @@
 package cy.jdkdigital.productivelib.util;
 
-import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.FastColor;
 
 import java.util.HashMap;

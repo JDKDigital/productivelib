@@ -65,19 +65,22 @@ public class MultiBlockDetector
             height++;
 
             if (!level.getBlockState(bottomCornerRelativePosition).is(bottomBlocks)) {
-                throw new InvalidStructureException("Invalid or missing bottom starting block. Valid blocks are " + bottomBlocks, topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).mutable());
+                var invalidPos = topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).mutable();
+                throw new InvalidStructureException("Invalid or missing bottom starting block. Valid blocks are " + bottomBlocks, invalidPos, level.getBlockState(invalidPos));
             }
 
             // validate bottom
             AtomicReference<BlockState> firstBottomBlock = new AtomicReference<>();
-            List<BlockPos> notBottomBlocks = BlockPos.betweenClosedStream(topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).below(height), topCorners.getSecond().relative(controllerFacing).relative(controllerFacing.getClockWise()).below(height)).filter(pos -> {
-                if (firstBottomBlock.get() == null) {
-                    firstBottomBlock.set(level.getBlockState(pos));
-                }
-                return uniformBottom ? !level.getBlockState(pos).is(firstBottomBlock.get().getBlock()) : !level.getBlockState(pos).is(bottomBlocks);
-            }).toList();
+            List<BlockPos> notBottomBlocks = BlockPos.betweenClosedStream(topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).below(height), topCorners.getSecond().relative(controllerFacing).relative(controllerFacing.getClockWise()).below(height))
+                    .map(BlockPos::immutable)
+                    .filter(pos -> {
+                        if (firstBottomBlock.get() == null) {
+                            firstBottomBlock.set(level.getBlockState(pos));
+                        }
+                        return uniformBottom ? !level.getBlockState(pos).is(firstBottomBlock.get().getBlock()) : !level.getBlockState(pos).is(bottomBlocks);
+                    }).toList();
             if (!notBottomBlocks.isEmpty()) {
-                throw new InvalidStructureException("Invalid or missing bottom block." + (uniformBottom ? "All bottom blocks must be of the same type." : ""), notBottomBlocks.getFirst());
+                throw new InvalidStructureException("Invalid or missing bottom block." + (uniformBottom ? "All bottom blocks must be of the same type." : ""), notBottomBlocks.getFirst(), level.getBlockState(notBottomBlocks.getFirst()));
             }
         } else {
             // check how far the wall under the controller continues
@@ -88,9 +91,11 @@ public class MultiBlockDetector
 
         // find lid structure
         if (topBlocks != null) {
-            List<BlockPos> notTopBlocks = BlockPos.betweenClosedStream(topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).above(), topCorners.getSecond().relative(controllerFacing).relative(controllerFacing.getClockWise()).above()).filter(pos -> !level.getBlockState(pos).is(topBlocks)).toList();
+            List<BlockPos> notTopBlocks = BlockPos.betweenClosedStream(topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).above(), topCorners.getSecond().relative(controllerFacing).relative(controllerFacing.getClockWise()).above())
+                    .map(BlockPos::immutable)
+                    .filter(pos -> !level.getBlockState(pos).is(topBlocks)).toList();
             if (!notTopBlocks.isEmpty()) {
-                throw new InvalidStructureException("Invalid top block", notTopBlocks.getFirst());
+                throw new InvalidStructureException("Invalid top block", notTopBlocks.getFirst(), level.getBlockState(notTopBlocks.getFirst()));
             }
         }
 
@@ -110,9 +115,12 @@ public class MultiBlockDetector
             List<BlockPos> notAirBlocks = BlockPos.betweenClosedStream(
                     topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()),
                     topCorners.getSecond().relative(controllerFacing).relative(controllerFacing.getClockWise()).below(height - 1)
-            ).filter(pos -> !level.getBlockState(pos).isAir()).toList();
+            ).map(BlockPos::immutable).filter(pos -> {
+                var state = level.getBlockState(pos);
+                return !state.isAir() && !state.is(ProductiveLib.IGNORED_INTERNAL_MULTIBLOCK_BLOCKS);
+            }).toList();
             if (!notAirBlocks.isEmpty()) {
-                throw new InvalidStructureException("Internal structure area is not clear", notAirBlocks.getFirst());
+                throw new InvalidStructureException("Internal structure area is not clear", notAirBlocks.getFirst(), level.getBlockState(notAirBlocks.getFirst()));
             }
         }
 

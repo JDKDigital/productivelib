@@ -1,7 +1,6 @@
 package cy.jdkdigital.productivelib.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import cy.jdkdigital.productivelib.ProductiveLib;
 import cy.jdkdigital.productivelib.event.BeeReleaseEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;

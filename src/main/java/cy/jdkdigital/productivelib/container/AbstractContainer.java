@@ -1,7 +1,8 @@
 package cy.jdkdigital.productivelib.container;
 
-import cy.jdkdigital.productivelib.common.block.entity.InventoryHandlerHelper;
+import cy.jdkdigital.productivelib.common.block.entity.ICapabilityBlockEntity;
 import cy.jdkdigital.productivelib.common.block.entity.IUpgradeableBlockEntity;
+import cy.jdkdigital.productivelib.common.block.entity.InventoryHandlerHelper;
 import cy.jdkdigital.productivelib.common.item.AbstractUpgradeItem;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -16,13 +17,26 @@ import net.neoforged.neoforge.items.IItemHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public abstract class AbstractContainer extends AbstractContainerMenu
+public abstract class AbstractContainer<T extends ICapabilityBlockEntity> extends AbstractContainerMenu
 {
-    protected AbstractContainer(@Nullable MenuType<?> type, int id) {
+    private final T blockEntity;
+
+    protected AbstractContainer(@Nullable MenuType<?> type, T blockEntity, int id) {
         super(type, id);
+        this.blockEntity = blockEntity;
     }
 
-    protected abstract BlockEntity getBlockEntity();
+    public T getBlockEntity() {
+        return blockEntity;
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        if (this.blockEntity instanceof BlockEntity be) {
+            return player.distanceToSqr((double) be.getBlockPos().getX() + (double) 0.5F, (double) be.getBlockPos().getY() + (double) 0.5F, (double) be.getBlockPos().getZ() + (double) 0.5F) <= (double) 64.0F;
+        }
+        return false;
+    }
 
     @Nonnull
     @Override

@@ -1,14 +1,5 @@
 package cy.jdkdigital.productivelib.common.block.entity;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import cy.jdkdigital.productivelib.ProductiveLib;
 import cy.jdkdigital.productivelib.common.item.AbstractUpgradeItem;
 import cy.jdkdigital.productivelib.event.CollectValidUpgradesEvent;
 import net.minecraft.core.HolderLookup;
@@ -21,6 +12,13 @@ import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.items.ItemStackHandler;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class InventoryHandlerHelper
 {
@@ -238,6 +236,7 @@ public class InventoryHandlerHelper
         }
     }
 
+    // Far modifying valid upgrades in other mods blocks
     public static class UpgradeHandler extends BlockEntityItemStackHandler
     {
         private final List<Item> validUpgrades;

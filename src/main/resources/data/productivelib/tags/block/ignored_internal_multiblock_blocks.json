@@ -1,0 +1,9 @@
+{
+  "values": [
+    "minecraft:snow",
+    {
+      "id": "torchmaster:invisible_light",
+      "required": false
+    }
+  ]
+}

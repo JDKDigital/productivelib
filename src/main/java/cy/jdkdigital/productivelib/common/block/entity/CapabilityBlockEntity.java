@@ -14,7 +14,7 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-public abstract class CapabilityBlockEntity extends AbstractBlockEntity implements Nameable
+public abstract class CapabilityBlockEntity extends AbstractBlockEntity implements ICapabilityBlockEntity, Nameable
 {
     public CapabilityBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -30,12 +30,15 @@ public abstract class CapabilityBlockEntity extends AbstractBlockEntity implemen
         return getName();
     }
 
+    @Override
     public IItemHandler getItemHandler() {
         return null;
     }
+    @Override
     public EnergyStorage getEnergyHandler() {
         return null;
     }
+    @Override
     public IFluidHandler getFluidHandler() {
         return null;
     }

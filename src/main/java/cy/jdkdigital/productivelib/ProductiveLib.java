@@ -5,11 +5,15 @@ import cy.jdkdigital.productivelib.common.condition.LazyCondition;
 import cy.jdkdigital.productivelib.crafting.condition.FluidTagEmptyCondition;
 import cy.jdkdigital.productivelib.loot.*;
 import cy.jdkdigital.productivelib.loot.condition.OptionalCopyBlockState;
-import cy.jdkdigital.productivelib.registry.ModDataComponents;
 import cy.jdkdigital.productivelib.registry.LibItems;
+import cy.jdkdigital.productivelib.registry.ModDataComponents;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
@@ -48,6 +52,8 @@ public final class ProductiveLib
     public static final DeferredHolder<LootItemConditionType, LootItemConditionType> KILLED_BY_UUID = LOOT_POOL_CONDITIONS.register("killed_by_uuid", () -> new LootItemConditionType(LootItemKilledByUUIDCondition.CODEC));
     public static final DeferredHolder<MapCodec<? extends ICondition>, MapCodec<FluidTagEmptyCondition>> FLUID_TAG_EMPTY_CONDITION = CONDITION_CODECS.register("fluid_tag_empty", () -> FluidTagEmptyCondition.CODEC);
     public static final DeferredHolder<MapCodec<? extends ICondition>, MapCodec<LazyCondition>> LAZY_CONDITION = CONDITION_CODECS.register("lazy", () -> LazyCondition.CODEC);
+
+    public static final TagKey<Block> IGNORED_INTERNAL_MULTIBLOCK_BLOCKS = BlockTags.create(ResourceLocation.fromNamespaceAndPath(MODID, "ignored_internal_multiblock_blocks"));
 
     public ProductiveLib(IEventBus modEventBus, ModContainer container) {
         LOOT_SERIALIZERS.register(modEventBus);

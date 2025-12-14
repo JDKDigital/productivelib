@@ -2,11 +2,9 @@ package cy.jdkdigital.productivelib.loot;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.gson.JsonParseException;
-import com.mojang.serialization.*;
-import com.mojang.serialization.codecs.PrimitiveCodec;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import cy.jdkdigital.productivelib.ProductiveLib;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;

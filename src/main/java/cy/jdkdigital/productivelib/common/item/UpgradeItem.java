@@ -2,7 +2,6 @@ package cy.jdkdigital.productivelib.common.item;
 
 import cy.jdkdigital.productivelib.event.UpgradeTooltipEvent;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -17,19 +16,26 @@ public class UpgradeItem extends AbstractUpgradeItem
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, TooltipContext pContext, List<Component> pTooltipComponents, TooltipFlag pTooltipFlag) {
-        super.appendHoverText(pStack, pContext, pTooltipComponents, pTooltipFlag);
+    public void appendHoverText(ItemStack pStack, TooltipContext pContext, List<Component> tooltipComponents, TooltipFlag pTooltipFlag) {
+        super.appendHoverText(pStack, pContext, tooltipComponents, pTooltipFlag);
 
-        var event = NeoForge.EVENT_BUS.post(new UpgradeTooltipEvent(pStack, pContext, pTooltipComponents, null));
+        var event = NeoForge.EVENT_BUS.post(new UpgradeTooltipEvent(pStack, pContext, tooltipComponents, null));
 
-        if (event.getValidBlocks().size() > 0) {
-            pTooltipComponents.add(Component.translatable("productivelib.information.upgrade.valid_blocks.list_header").withStyle(ChatFormatting.WHITE));
+        if (!pTooltipFlag.hasShiftDown()) {
+            tooltipComponents.add(Component.translatable("productivelib.information.upgrade.extend").withStyle(ChatFormatting.DARK_GRAY));
+        }
+
+        if (!event.getValidBlocks().isEmpty()) {
+            tooltipComponents.add(Component.translatable("productivelib.information.upgrade.valid_blocks.list_header").withStyle(ChatFormatting.WHITE));
 
             event.getValidBlocks().forEach(component -> {
-                pTooltipComponents.add(Component.translatable("productivelib.information.upgrade.valid_blocks.list_item", component.getString()).withStyle(ChatFormatting.GOLD));
+                tooltipComponents.add(Component.translatable("productivelib.information.upgrade.valid_blocks.list_item", component.blockName()).withStyle(ChatFormatting.GOLD));
+                if (pTooltipFlag.hasShiftDown()) {
+                    event.getTooltipComponents().add(Component.translatable("productivelib.information.upgrade.valid_blocks.list_item_content", Component.translatable(component.translationKey(), component.value()).getString()).withStyle(ChatFormatting.GRAY));
+                }
             });
         }
 
-        pTooltipComponents.add(Component.translatable("productivelib.information.upgrade.install_help").withStyle(ChatFormatting.GREEN));
+        tooltipComponents.add(Component.translatable("productivelib.information.upgrade.install_help").withStyle(ChatFormatting.GREEN));
     }
 }

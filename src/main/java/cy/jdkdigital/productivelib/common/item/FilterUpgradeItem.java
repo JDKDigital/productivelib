@@ -1,6 +1,5 @@
 package cy.jdkdigital.productivelib.common.item;
 
-import cy.jdkdigital.productivelib.ProductiveLib;
 import cy.jdkdigital.productivelib.event.AddEntityToFilterEvent;
 import cy.jdkdigital.productivelib.event.UpgradeTooltipEvent;
 import cy.jdkdigital.productivelib.registry.ModDataComponents;
@@ -36,26 +35,26 @@ public class FilterUpgradeItem extends UpgradeItem
     }
 
     @Override
-    public void appendHoverText(ItemStack pStack, TooltipContext pContext, List<Component> pTooltipComponents, TooltipFlag pTooltipFlag) {
-        super.appendHoverText(pStack, pContext, pTooltipComponents, pTooltipFlag);
+    public void appendHoverText(ItemStack pStack, TooltipContext pContext, List<Component> tooltipComponents, TooltipFlag pTooltipFlag) {
+        super.appendHoverText(pStack, pContext, tooltipComponents, pTooltipFlag);
 
         List<ResourceLocation> entities = pStack.getOrDefault(ModDataComponents.ENTITY_TYPE_LIST, new ArrayList<>());
 
-        if (entities.size() > 0) {
-            pTooltipComponents.add(Component.translatable("productivelib.information.upgrade.upgrade_entity_filter.list_header").withStyle(ChatFormatting.WHITE));
+        if (!entities.isEmpty()) {
+            tooltipComponents.add(Component.translatable("productivelib.information.upgrade.upgrade_entity_filter.list_header").withStyle(ChatFormatting.WHITE));
 
-            var event = NeoForge.EVENT_BUS.post(new UpgradeTooltipEvent(pStack, pContext, pTooltipComponents, new ArrayList<>(entities)));
+            var event = NeoForge.EVENT_BUS.post(new UpgradeTooltipEvent(pStack, pContext, tooltipComponents, new ArrayList<>(entities)));
             if (event.getEntities() != null) {
                 event.getEntities().forEach(id -> {
-                    pTooltipComponents.add(Component.translatable("productivelib.information.upgrade.upgrade_entity_filter.list_item", Component.translatable("entity." + id.getNamespace() + "." + id.getPath()).getString()).withStyle(ChatFormatting.GOLD));
+                    tooltipComponents.add(Component.translatable("productivelib.information.upgrade.upgrade_entity_filter.list_item", Component.translatable("entity." + id.getNamespace() + "." + id.getPath()).getString()).withStyle(ChatFormatting.GOLD));
                 });
             }
         }
 
         if (entities.isEmpty()) {
-            pTooltipComponents.add(Component.translatable("productivelib.information.upgrade.upgrade_entity_filter.empty").withStyle(ChatFormatting.WHITE));
+            tooltipComponents.add(Component.translatable("productivelib.information.upgrade.upgrade_entity_filter.empty").withStyle(ChatFormatting.WHITE));
         } else {
-            pTooltipComponents.add(Component.translatable("productivelib.information.upgrade.upgrade_entity_filter.clear").withStyle(ChatFormatting.WHITE));
+            tooltipComponents.add(Component.translatable("productivelib.information.upgrade.upgrade_entity_filter.clear").withStyle(ChatFormatting.WHITE));
         }
     }
 

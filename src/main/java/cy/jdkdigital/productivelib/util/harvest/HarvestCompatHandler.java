@@ -6,7 +6,6 @@ import net.neoforged.fml.ModList;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class HarvestCompatHandler
 {
