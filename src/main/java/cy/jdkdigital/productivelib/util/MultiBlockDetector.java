@@ -66,7 +66,7 @@ public class MultiBlockDetector
 
             if (!level.getBlockState(bottomCornerRelativePosition).is(bottomBlocks)) {
                 var invalidPos = topCorners.getFirst().relative(controllerFacing.getOpposite()).relative(controllerFacing.getCounterClockWise()).mutable();
-                throw new InvalidStructureException("Invalid or missing bottom starting block. Valid blocks are " + bottomBlocks, invalidPos, level.getBlockState(invalidPos));
+                throw new InvalidStructureException("No bottom starting block (one of " + bottomBlocks + ") found within " + maxHeight + " blocks below the top corner block", invalidPos, level.getBlockState(invalidPos));
             }
 
             // validate bottom
